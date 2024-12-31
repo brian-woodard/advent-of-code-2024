@@ -70,7 +70,7 @@ int main()
                   if (input[idx] == ',' && op1 != -1)
                      state = STATE_READ_OP2;
                   else
-                     STATE_READ_MUL;
+                     state = STATE_READ_MUL;
                   idx++;
                }
                break;
@@ -94,7 +94,6 @@ int main()
                   {
                      value += (op1 * op2);
 
-                     //if (op1 == 
                      out_file << op1 << " " << op2 << std::endl;
 
                      num_muls++;
