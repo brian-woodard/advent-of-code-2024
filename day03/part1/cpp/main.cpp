@@ -16,7 +16,6 @@ int main()
    std::ifstream file("../input.txt");
    std::ofstream out_file("test1.txt");
    uint64_t value = 0;
-   uint64_t num_muls = 0;
    int op1 = -1;
    int op2 = -1;
    TState state = STATE_READ_MUL;
@@ -95,8 +94,6 @@ int main()
                      value += (op1 * op2);
 
                      out_file << op1 << " " << op2 << std::endl;
-
-                     num_muls++;
                   }
                   state = STATE_READ_MUL;
                   idx++;
@@ -106,6 +103,5 @@ int main()
       }
 
       printf("Value: %llu\n", value);
-      printf("Num muls: %d\n", num_muls);
    }
 }
