@@ -1,4 +1,6 @@
 use std::fs;
+use std::fs::File;
+use std::io::Write;
 
 enum State
 {
@@ -9,14 +11,15 @@ enum State
 
 fn main() {
     let input: Vec<u8> = fs::read("../../input.txt").expect("failed to open.");
+    let mut out_file = File::create("test1.txt").expect("could not create file.");
     let mut value: u64 = 0;
     let mut op1: i32 = -1;
     let mut op2: i32 = -1;
     let mut idx: usize = 0;
     let mut state = State::ReadMul;
-    let mut num_muls = 0;
 
     while idx < input.len() {
+
         match state {
             State::ReadMul => {
                 if input[idx] == b'm' &&
@@ -63,15 +66,14 @@ fn main() {
                 } else {
                     if input[idx] == b')' && op2 != -1 {
                         value += (op1 * op2) as u64;
-                        num_muls += 1;
-                    } else {
-                        state = State::ReadMul;
+                        writeln!(&mut out_file, "{} {}", op1, op2).expect("failed to write to file.");
                     }
+                    state = State::ReadMul;
                     idx += 1;
                 }
             }
         }
     }
 
-    println!("Value: {} {}", value, num_muls);
+    println!("Value: {}", value);
 }
