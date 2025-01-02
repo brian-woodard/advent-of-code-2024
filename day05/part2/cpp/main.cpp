@@ -30,13 +30,6 @@ void fix_order(std::vector<int>& Pages,
 
    pages.reserve(Pages.size());
 
-   printf("\nfix order:\n");
-   for (auto& page : Pages)
-   {
-      printf("%d ", page);
-   }
-   printf("\n");
-
    pages.push_back(Pages[0]);
    for (size_t i = 1; i < Pages.size(); i++)
    {
@@ -46,7 +39,6 @@ void fix_order(std::vector<int>& Pages,
       {
          if (check_in_range(Pages[i], pages[j], BeforeMap))
          {
-            printf("insert at %d\n", j);
             pages.insert(pages.begin() + j, Pages[i]);
             placed = true;
             break;
@@ -55,18 +47,10 @@ void fix_order(std::vector<int>& Pages,
 
       if (!placed)
       {
-         printf("insert at end\n");
          pages.push_back(Pages[i]);
       }
    }
    Pages = pages;
-
-   printf("fixed:\n");
-   for (auto& page : Pages)
-   {
-      printf("%d ", page);
-   }
-   printf("\n");
 }
 
 int check_order(std::vector<int>& Pages,
