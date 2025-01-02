@@ -125,20 +125,6 @@ int main()
          }
       }
 
-      //auto range = before_map.equal_range(75);
-      //printf("75 before --------------\n");
-      //for (auto it = range.first; it != range.second; it++)
-      //{
-      //   printf("%d -> %d\n", it->first, it->second);
-      //}
-
-      //range = after_map.equal_range(75);
-      //printf("75 after ---------------\n");
-      //for (auto it = range.first; it != range.second; it++)
-      //{
-      //   printf("%d -> %d\n", it->first, it->second);
-      //}
-
       for (auto& pages : print)
       {
          result += check_order(pages, before_map, after_map);
