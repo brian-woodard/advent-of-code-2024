@@ -136,14 +136,34 @@ bool check_for_loop(std::vector<char>& Room, int Width, int Height, int CurrIdx,
    int moves = 0;
    TMoveState state = MOVE_UP;
    static int max_moves = 0;
+
+   int start_idx = StartIdx;
+   std::unordered_map<int, bool> visited;
+
+   visited[start_idx] = true;
+
    while (state != FINISHED)
    {
       move(Room, Width, Height, StartIdx, state);
       moves++;
 
+      // check if we haven't visited this spot before
+      if (visited.find(StartIdx) != visited.end())
+      {
+         // update this as our new start index
+         start_idx = StartIdx;
+      }
+      else if (start_idx == StartIdx)
+      {
+         printf(">>> loop at move %d\n", moves);
+      }
+
+
       if (moves > (Width * Height * 10))
          break;
    }
+
+   printf("(%d, %d) moves %d\n", x, y, moves);
 
    if (state == FINISHED && moves > max_moves)
    {
@@ -162,6 +182,7 @@ int main()
    std::ifstream file("../test.txt");
    std::vector<char> room;
    std::unordered_map<int, bool> loop_locations;
+   int num_loop_locations = 0;
    int width = 0;
    int height = 0;
    int start_idx = 0;
@@ -222,11 +243,13 @@ int main()
 
          if (state != FINISHED)
          {
-            if (check_for_loop(room, width, height, curr_idx, start_idx))
+            if (loop_locations.find(curr_idx) == loop_locations.end())
             {
-               //if (loop_locations.find(curr_idx) == loop_locations.end())
-               //   printf("loop at %d found on move %d\n", curr_idx, moves);
-               loop_locations[curr_idx] = true;
+               int x = curr_idx % width;
+               int y = curr_idx / width;
+               loop_locations[curr_idx] = check_for_loop(room, width, height, curr_idx, start_idx);
+               if (loop_locations[curr_idx])
+                  printf("found loop at (%d, %d) loop %d\n", x, y, loop_locations[curr_idx]);
             }
          }
 
@@ -236,10 +259,14 @@ int main()
       room[start_idx] = '*';
       for (auto idx : loop_locations)
       {
-         room[idx.first] = 'O';
+         if (idx.second)
+         {
+            room[idx.first] = 'O';
+            num_loop_locations++;
+         }
       }
       print_room(room, width, height);
 
-      printf("Result: %d %d\n", moves, loop_locations.size());
+      printf("Result: %d %d\n", moves, num_loop_locations);
    }
 }
