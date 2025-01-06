@@ -125,11 +125,6 @@ bool move(std::vector<char>& Room, int Width, int Height, int& Idx, TMoveState& 
 
 bool check_for_loop(std::vector<char>& Room, int Width, int Height, int CurrIdx, int StartIdx)
 {
-   int x = CurrIdx % Width;
-   int y = CurrIdx / Width;
-
-   //printf("\ncheck for loop at (%d, %d)\n", x, y);
-
    // add a barrier at current location
    char prev = Room[CurrIdx];
    Room[CurrIdx] = '#';
@@ -149,35 +144,30 @@ bool check_for_loop(std::vector<char>& Room, int Width, int Height, int CurrIdx,
       bool able_to_move = move(Room, Width, Height, StartIdx, state);
       moves++;
 
-      //if (able_to_move && state != FINISHED)
-      //{
-      //   // check if we haven't visited this spot before
-      //   if (visited.find(StartIdx) == visited.end())
-      //   {
-      //      int x = StartIdx % Width;
-      //      int y = StartIdx / Width;
-      //      //printf(">>> (%d, %d) visited false size %d move %d\n", x, y, visited.size(), moves);
-      //      // update this as our new start index
-      //      start_idx = StartIdx;
-      //      visited[start_idx] = true;
-      //   }
-      //   else if (start_idx == StartIdx)
-      //   {
-      //      //printf(">>> loop at move %d\n", moves);
-      //      break;
-      //   }
-      //}
+      if (able_to_move && state != FINISHED)
+      {
+         // check if we haven't visited this spot before
+         if (visited.find(StartIdx) == visited.end())
+         {
+            int x = StartIdx % Width;
+            int y = StartIdx / Width;
+            // update this as our new start index
+            start_idx = StartIdx;
+            visited[start_idx] = true;
+         }
+         else if (start_idx == StartIdx)
+         {
+            break;
+         }
+      }
 
-      if (moves > (Width * Height * 10))
-         break;
+      //if (moves > (Width * Height * 10))
+      //   break;
    }
-
-   //printf("(%d, %d) moves %d\n", x, y, moves);
 
    if (state == FINISHED && moves > max_moves)
    {
       max_moves = moves;
-      //printf("Max is now: %d\n", max_moves);
    }
 
    // remove barrier at current location
@@ -246,20 +236,16 @@ int main()
       {
          if (move(room, width, height, curr_idx, state))
          {
-            room[curr_idx] = 'o';
+            if (curr_idx >= 0 && curr_idx < room.size())
+               room[curr_idx] = 'o';
             moves++;
-         }
 
-         if (state != FINISHED)
-         {
-            if (loop_locations.find(curr_idx) == loop_locations.end())
+            if (state != FINISHED)
             {
-               int x = curr_idx % width;
-               int y = curr_idx / width;
-               //printf(">>> %d check for loop at (%d, %d)\n", moves, x, y);
-               loop_locations[curr_idx] = check_for_loop(room, width, height, curr_idx, start_idx);
-               //if (loop_locations[curr_idx])
-               //   printf("found loop at (%d, %d) loop %d\n", x, y, loop_locations[curr_idx]);
+               if (loop_locations.find(curr_idx) == loop_locations.end())
+               {
+                  loop_locations[curr_idx] = check_for_loop(room, width, height, curr_idx, start_idx);
+               }
             }
          }
 
@@ -267,11 +253,11 @@ int main()
       }
 
       room[start_idx] = '*';
-      for (auto idx : loop_locations)
+      for (auto it = loop_locations.begin(); it != loop_locations.end(); it++)
       {
-         if (idx.second)
+         if (it->second)
          {
-            room[idx.first] = 'O';
+            room[it->first] = 'O';
             num_loop_locations++;
          }
       }
