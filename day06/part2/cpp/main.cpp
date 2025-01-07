@@ -132,7 +132,6 @@ bool check_for_loop(std::vector<char>& Room, int Width, int Height, int CurrIdx,
    // see if we're in a loop
    int moves = 0;
    TMoveState state = MOVE_UP;
-   static int max_moves = 0;
 
    int start_idx = StartIdx;
    std::unordered_map<int, bool> visited;
@@ -163,11 +162,6 @@ bool check_for_loop(std::vector<char>& Room, int Width, int Height, int CurrIdx,
 
       //if (moves > (Width * Height * 10))
       //   break;
-   }
-
-   if (state == FINISHED && moves > max_moves)
-   {
-      max_moves = moves;
    }
 
    // remove barrier at current location
@@ -230,7 +224,6 @@ int main()
       assert(room.size() == (width*height));
       print_room(room, width, height);
 
-      bool first = true;
       curr_idx = start_idx;
       while (state != FINISHED)
       {
@@ -248,8 +241,6 @@ int main()
                }
             }
          }
-
-         first = false;
       }
 
       room[start_idx] = '*';
