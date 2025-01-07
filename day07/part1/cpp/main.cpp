@@ -91,12 +91,12 @@ int main()
             skip_first = false;
          }
 
-         printf("%llu: ", operation.Result);
-         for (auto& op : operation.Operands)
-         {
-            printf("%d ", op);
-         }
-         printf("\n");
+         //printf("%llu: ", operation.Result);
+         //for (auto& op : operation.Operands)
+         //{
+         //   printf("%d ", op);
+         //}
+         //printf("\n");
 
          input.Operations.push_back(operation);
       }
