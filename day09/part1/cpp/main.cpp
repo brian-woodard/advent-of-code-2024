@@ -32,6 +32,7 @@ int main()
 
       buffer << file.rdbuf();
 
+      input.reserve(buffer.str().length());
 
       bool is_file = true;
       int file_id = 0;
@@ -53,7 +54,7 @@ int main()
          is_file = !is_file;
       }
 
-      print_disk(input);
+      //print_disk(input);
 
       // Defragment disk
       size_t empty_idx = 0;
@@ -94,7 +95,7 @@ int main()
          input[node_idx].FileId = -1;
       }
 
-      print_disk(input);
+      //print_disk(input);
       printf("buffer length %d\n", buffer.str().length());
       printf("Max file id: %d\n", file_id);
       printf("iterations: %d\n", count);
