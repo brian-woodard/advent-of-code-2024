@@ -23,7 +23,7 @@ void print_disk(const std::vector<TDiskNode>& Disk)
 
 int main()
 {
-   std::ifstream file("../input.txt");
+   std::ifstream file("../test.txt");
    std::vector<TDiskNode> input;
 
    if (file.is_open())
