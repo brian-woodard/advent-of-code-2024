@@ -8,7 +8,7 @@ struct DiskNode {
 }
 
 fn main() {
-    let file = File::open("../../test.txt").expect("failed to open file.");
+    let file = File::open("../../input.txt").expect("failed to open file.");
     let reader = BufReader::new(file);
     let mut input: Vec<char> = Vec::new();
     let mut disk: Vec<DiskNode> = Vec::new();
