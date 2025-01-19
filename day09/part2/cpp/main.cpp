@@ -82,7 +82,7 @@ int main()
          int empty_idx = 0;
          int node_idx = input.size() - 1;
 
-         // Find left mode empty node
+         // Find first empty node
          for (int i = 0; i < input.size(); i++)
          {
             if (input[i].FileId == -1)
