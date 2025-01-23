@@ -9,7 +9,7 @@
 class CGlTextAtlas : public CGlObject
 {
 public:
-   CGlTextAtlas(std::shared_ptr<CShader>& Shader, float X, float Y, float Width, float Height, std::shared_ptr<CFontAtlas> FontAtlas, float Scale = 1.0);
+   CGlTextAtlas(std::shared_ptr<CShader>& Shader, float X, float Y, float Width, float Height, std::shared_ptr<CFontAtlas> FontAtlas, float Scale = 1.0, bool FlipVertical = false);
    ~CGlTextAtlas() override = default;
 
    void CalculateTextArea();
@@ -31,6 +31,7 @@ private:
    glm::vec4 mTextColor;
    std::shared_ptr<CFontAtlas> mFontAtlas;
    float mScale;
+   bool mFlipVertical;
 
    static unsigned int mVAO; // Vertex Array Object
    static unsigned int mVBO; // Vertex Buffer Object

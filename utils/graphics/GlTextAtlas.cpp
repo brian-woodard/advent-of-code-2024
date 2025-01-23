@@ -14,8 +14,8 @@ unsigned int CGlTextAtlas::mVAO = 0;
 unsigned int CGlTextAtlas::mVBO = 0;
 bool CGlTextAtlas::mBuffersInitialized = false;
 
-CGlTextAtlas::CGlTextAtlas(std::shared_ptr<CShader>& Shader, float X, float Y, float Width, float Height, std::shared_ptr<CFontAtlas> FontAtlas, float Scale)
-   : CGlObject(Shader, X, Y, Width, Height), mTextColor(1.0f), mFontAtlas(FontAtlas), mScale(Scale)
+CGlTextAtlas::CGlTextAtlas(std::shared_ptr<CShader>& Shader, float X, float Y, float Width, float Height, std::shared_ptr<CFontAtlas> FontAtlas, float Scale, bool FlipVertical)
+   : CGlObject(Shader, X, Y, Width, Height), mTextColor(1.0f), mFontAtlas(FontAtlas), mScale(Scale), mFlipVertical(FlipVertical)
 {
    if (!mBuffersInitialized)
       InitBuffers();
@@ -45,10 +45,10 @@ void CGlTextAtlas::CalculateTextArea()
       int c_idx = static_cast<int>(c - 32);
 
       // Adjust glyph width and height to percentage, scaled by the text's scale factor
-      float adjustedHeight = (glyph_data[c_idx].size_y * 0.2f) * mScale;
+      float adjustedHeight = (glyph_data[c_idx].size_y * 1.0f) * mScale;
 
       // Advance cursor for the next character
-      total_width += (glyph_data[c_idx].advance * 0.2f) * mScale;
+      total_width += (glyph_data[c_idx].advance * 1.0f) * mScale;
 
       // Track the maximum height
       if (adjustedHeight > max_height)
@@ -113,21 +113,39 @@ void CGlTextAtlas::Render(const glm::mat4& Projection)
       int c_idx = static_cast<int>(c - 32);
 
       // Adjust glyph width and height to percentage, scaled by the text's scale factor
-      float adjustedWidth = (glyph_data[c_idx].size_x * 0.2f) * mScale;
-      float adjustedHeight = (glyph_data[c_idx].size_y * 0.2f) * mScale;
+      float adjustedWidth = (glyph_data[c_idx].size_x * 1.0f) * mScale;
+      float adjustedHeight = (glyph_data[c_idx].size_y * 1.0f) * mScale;
 
       // Calculate positions for the current glyph
-      float xpos = x + (glyph_data[c_idx].x_off * 0.2f);
-      float ypos = y - ((glyph_data[c_idx].size_y + glyph_data[c_idx].y_off) * 0.2f);
+      float xpos = x + (glyph_data[c_idx].x_off * 1.0f);
+      float ypos = y - ((glyph_data[c_idx].size_y + glyph_data[c_idx].y_off) * 1.0f);
+
+      glm::vec2 tex_coord_ll;
+      glm::vec2 tex_coord_ur;
+
+      if (mFlipVertical)
+      {
+         tex_coord_ll.x = glyph_data[c_idx].x0;
+         tex_coord_ll.y = glyph_data[c_idx].y1;
+         tex_coord_ur.x = glyph_data[c_idx].x1;
+         tex_coord_ur.y = glyph_data[c_idx].y0;
+      }
+      else
+      {
+         tex_coord_ll.x = glyph_data[c_idx].x0;
+         tex_coord_ll.y = glyph_data[c_idx].y0;
+         tex_coord_ur.x = glyph_data[c_idx].x1;
+         tex_coord_ur.y = glyph_data[c_idx].y1;
+      }
 
       float vertices[6][4] = {
-         { xpos,                 ypos + adjustedHeight, glyph_data[c_idx].x0, glyph_data[c_idx].y0 },
-         { xpos,                 ypos,                  glyph_data[c_idx].x0, glyph_data[c_idx].y1 },
-         { xpos + adjustedWidth, ypos,                  glyph_data[c_idx].x1, glyph_data[c_idx].y1 },
+         { xpos - adjustedWidth * 0.5f, ypos + adjustedHeight * 0.5f, tex_coord_ll.x, tex_coord_ll.y },
+         { xpos - adjustedWidth * 0.5f, ypos - adjustedHeight * 0.5f, tex_coord_ll.x, tex_coord_ur.y },
+         { xpos + adjustedWidth * 0.5f, ypos - adjustedHeight * 0.5f, tex_coord_ur.x, tex_coord_ur.y },
 
-         { xpos,                 ypos + adjustedHeight, glyph_data[c_idx].x0, glyph_data[c_idx].y0 },
-         { xpos + adjustedWidth, ypos,                  glyph_data[c_idx].x1, glyph_data[c_idx].y1 },
-         { xpos + adjustedWidth, ypos + adjustedHeight, glyph_data[c_idx].x1, glyph_data[c_idx].y0 }
+         { xpos - adjustedWidth * 0.5f, ypos + adjustedHeight * 0.5f, tex_coord_ll.x, tex_coord_ll.y },
+         { xpos + adjustedWidth * 0.5f, ypos - adjustedHeight * 0.5f, tex_coord_ur.x, tex_coord_ur.y },
+         { xpos + adjustedWidth * 0.5f, ypos + adjustedHeight * 0.5f, tex_coord_ur.x, tex_coord_ll.y }
       };
 
       GLCALL(glBindBuffer(GL_ARRAY_BUFFER, mVBO));
@@ -136,7 +154,7 @@ void CGlTextAtlas::Render(const glm::mat4& Projection)
       GLCALL(glDrawArrays(GL_TRIANGLES, 0, 6));
 
       // Advance position for the next character
-      x += (glyph_data[c_idx].advance * 0.2f) * mScale;
+      x += (glyph_data[c_idx].advance * 1.0f) * mScale;
    }
 
    GLCALL(glBindVertexArray(0));
