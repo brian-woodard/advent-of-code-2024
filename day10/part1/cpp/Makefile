@@ -2,7 +2,7 @@
 SRC_DIR := .
 GRAPHICS_DIR := $(SRC_DIR)/../../../utils/graphics
 BIN_DIR := .
-LIB_DIR := ./lib
+LIB_DIR := lib
 UTILS_DIR := $(SRC_DIR)/../../../utils
 GLM_DIR := $(UTILS_DIR)/glm
 STB_DIR := $(UTILS_DIR)/stb
@@ -34,7 +34,7 @@ LIB := $(LIB_DIR)/graphics.a
 #              $(IMGUI_DIR)/backends/imgui_impl_opengl3.cpp
 
 SRCS := $(wildcard $(GRAPHICS_DIR)/*.cpp)
-OBJS := $(patsubst $(SRC_DIR)/%.cpp,$(LIB_DIR)/%.o,$(SRCS))
+OBJS := $(patsubst $(GRAPHICS_DIR)/%.cpp,$(LIB_DIR)/utils/graphics/%.o,$(SRCS)) $(LIB_DIR)/glad.o
 #IMGUI_OBJS := $(patsubst $(IMGUI_DIR)/%.cpp,$(LIB_DIR)/imgui/%.o,$(IMGUI_SRCS))
 
 # Dependency files
@@ -44,7 +44,7 @@ DEPS := $(OBJS:.o=.d)
 all: $(LIB) $(TARGET)
 
 # Link the final executable
-$(TARGET): $(LIB) | $(BIN_DIR)
+$(TARGET): $(LIB) main_glfw.cpp | $(BIN_DIR)
 	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
 # Create the archive
@@ -56,7 +56,7 @@ $(LIB): $(OBJS) | $(LIB_DIR)
 #	$(AR) $@ $^
 
 # Compile C++ source files into object files
-$(LIB_DIR)/%.o: $(SRC_DIR)/%.cpp | $(LIB_DIR)/graphics
+$(LIB_DIR)/utils/graphics/%.o: $(GRAPHICS_DIR)/%.cpp | $(LIB_DIR)/utils/graphics
 	@echo "Compiling $< to $@"
 	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
@@ -72,16 +72,16 @@ $(LIB_DIR)/%.o: $(SRC_DIR)/%.cpp | $(LIB_DIR)/graphics
 #$(LIB_DIR)/imgui/backends/%.o: $(IMGUI_DIR)/backends/%.cpp | $(LIB_DIR)/imgui/backends
 #	$(CXX) $(CXXFLAGS) -MMD -MP -c $< -o $@
 
-## Compile glad.c into object file using gcc
-#$(LIB_DIR)/graphics/glad.o: $(GRAPHICS_DIR)/glad.c | $(LIB_DIR)/graphics
-#	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
+# Compile glad.c into object file using gcc
+$(LIB_DIR)/glad.o: $(GLAD_DIR)/glad.c | $(LIB_DIR)
+	$(CC) $(CFLAGS) -MMD -MP -c $< -o $@
 
 # Ensure required directories exist
 $(LIB_DIR):
 	mkdir -p $(LIB_DIR)
 
-$(LIB_DIR)/graphics:
-	mkdir -p $(LIB_DIR)/graphics
+$(LIB_DIR)/utils/graphics:
+	mkdir -p $(LIB_DIR)/utils/graphics
 
 #$(LIB_DIR)/imgui:
 #	mkdir -p $(LIB_DIR)/imgui

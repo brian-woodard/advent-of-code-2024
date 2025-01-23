@@ -4,11 +4,22 @@
 #include <vector>
 #include <unordered_map>
 #include <cassert>
+#include <chrono>
+#include <thread>
+#include <memory>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 #include "GlDebug.h"
+#include "FontAtlas.h"
+#include "Shader.h"
+#include "GlRect.h"
 
-GLFWwindow* window;
+GLFWwindow*              window;
+std::shared_ptr<CShader> polygon_shader;
+std::shared_ptr<CShader> text_shader;
+std::shared_ptr<CShader> rect_shader;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -31,6 +42,8 @@ void resize(GLFWwindow* window, int width, int height)
 
 void render()
 {
+   glm::mat4 projection = glm::ortho(0.0f, 100.0f, 0.0f, 100.0f, -1.0f, 1.0f);
+
    //// Start a new ImGui frame
    //ImGui_ImplOpenGL3_NewFrame();
    //ImGui_ImplGlfw_NewFrame();
@@ -40,6 +53,10 @@ void render()
 
    // Clear the window with the background color
    GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+
+   CGlRect rect = CGlRect(rect_shader, 50.0f, 50.0f, 25.0f, 25.0f);
+   rect.SetColor(glm::vec4(1.0f));
+   rect.Render(projection);
 
    //// Finish ImGui frame
    //ImGui::Render();
@@ -136,7 +153,7 @@ int main()
          }
          else
          {
-            assert(width == line.length());
+            assert(width == (int)line.length());
          }
 
          for (const auto& c : line)
@@ -156,11 +173,11 @@ int main()
          {
             check_trailhead(input, i, -1, width, height, trailheads[i]);
             result += trailheads[i].size();
-            //printf("Result: (%d, %d) %d\n", i % width, i / width, trailheads[i].size());
+            //printf("Result: (%d, %d) %ld\n", i % width, i / width, trailheads[i].size());
          }
       }
 
-      printf("Result: %d\n", result);
+      printf("Result: %ld\n", result);
    }
 
    // Start GLFW
@@ -189,6 +206,8 @@ int main()
 
    glfwMakeContextCurrent(window);
 
+   gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+
    GLCALL(glClearColor(0.2f, 0.2f, 0.2f, 1.0f));
 
    GLCALL(glEnable(GL_BLEND));
@@ -215,13 +234,6 @@ int main()
    //io.Fonts->AddFontFromFileTTF("../data/fonts/ProggyClean.ttf", 13.0f);
    //io.Fonts->AddFontDefault();
 
-   //// Initialize fonts
-   //CFontAtlas::FontMap["DroidSansMono"] = std::make_shared<CFontAtlas>("../data/fonts/DroidSansMono.ttf", 21);
-   //CFontAtlas::FontMap["DejaVuSansMono"] = std::make_shared<CFontAtlas>("../data/fonts/DejaVuSansMono.ttf", 21);
-   //CFontAtlas::FontMap["FiraCode-Regular"] = std::make_shared<CFontAtlas>("../data/fonts/FiraCode-Regular.ttf", 21);
-   //CFontAtlas::FontMap["ProggyClean"] = std::make_shared<CFontAtlas>("../data/fonts/ProggyClean.ttf", 21);
-
-
    // Calculate the time per frame based on the framerate
    int framerate = 60; 
    std::chrono::nanoseconds frame_time = std::chrono::nanoseconds(0);
@@ -230,6 +242,14 @@ int main()
 
    auto start_frame = std::chrono::high_resolution_clock::now();
    auto end_frame = start_frame + frame_time;
+
+   // Initialize fonts
+   CFontAtlas::FontMap["DroidSansMono"] = std::make_shared<CFontAtlas>("../../../fonts/DroidSansMono.ttf", 21.0f);
+
+   // Initialize shaders
+   polygon_shader = std::make_shared<CShader>("../../../shaders/polygon.vert", "../../../shaders/polygon.frag");
+   text_shader = std::make_shared<CShader>("../../../shaders/text.vert", "../../../shaders/text.frag");
+   rect_shader = std::make_shared<CShader>("../../../shaders/rect.vert", "../../../shaders/rect.frag");
 
    while (!glfwWindowShouldClose(window))
    {
