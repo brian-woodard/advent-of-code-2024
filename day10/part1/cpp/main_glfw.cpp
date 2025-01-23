@@ -15,11 +15,25 @@
 #include "FontAtlas.h"
 #include "Shader.h"
 #include "GlRect.h"
+#include "GlTextAtlas.h"
 
 GLFWwindow*              window;
 std::shared_ptr<CShader> polygon_shader;
 std::shared_ptr<CShader> text_shader;
 std::shared_ptr<CShader> rect_shader;
+std::vector<int> input;
+std::unordered_map<int, std::unordered_map<int, bool>> trailheads;
+int width = 0;
+int height = 0;
+bool done = false;
+
+struct TSquare
+{
+   int Index;
+   int Color; // 0 = Green, 1 = White, 2 = Yellow
+};
+
+std::vector<TSquare> squares;
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -42,7 +56,7 @@ void resize(GLFWwindow* window, int width, int height)
 
 void render()
 {
-   glm::mat4 projection = glm::ortho(0.0f, 100.0f, 0.0f, 100.0f, -1.0f, 1.0f);
+   glm::mat4 projection = glm::ortho(0.0f, 100.0f, 100.0f, 0.0f, -1.0f, 1.0f);
 
    //// Start a new ImGui frame
    //ImGui_ImplOpenGL3_NewFrame();
@@ -54,9 +68,52 @@ void render()
    // Clear the window with the background color
    GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
-   CGlRect rect = CGlRect(rect_shader, 50.0f, 50.0f, 25.0f, 25.0f);
+   CGlTextAtlas text = CGlTextAtlas(text_shader, 0.0f, 0.0f, 0.0f, 0.0f, CFontAtlas::FontMap["DroidSansMono"], 0.5f, true);
+   text.SetColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
+
+   glm::vec2 adv = glm::vec2((100.0f / (float)width), (100.0f / (float)height));
+
+   // draw any squares
+   CGlRect rect = CGlRect(rect_shader, adv.x * 0.5 + adv.x * 2.0f, adv.y * 0.5 + adv.y * 3.0f, adv.x, adv.y);
    rect.SetColor(glm::vec4(1.0f));
-   rect.Render(projection);
+
+   for (const auto& square : squares)
+   {
+      int x = square.Index % width;
+      int y = square.Index / width;
+
+      glm::vec2 pos = glm::vec2(adv.x * 0.5 + (adv.x * x),
+                                adv.y * 0.5 + (adv.y * y));
+
+      if (square.Color == 0)
+         rect.SetColor(glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+      else if (square.Color == 1)
+         rect.SetColor(glm::vec4(1.0f, 1.0f, 1.0f, 0.2f));
+      else if (square.Color == 2)
+         rect.SetColor(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f));
+
+      rect.SetPosition(pos.x, pos.y);
+      rect.Render(projection);
+   }
+
+   glm::vec2 pos = glm::vec2(adv.x * 0.5f, adv.y * 0.5f);
+
+   for (int y = 0; y < height; y++)
+   {
+      for (int x = 0; x < width; x++)
+      {
+         int idx = (y * width) + x;
+
+         text.SetPosition(pos.x, pos.y);
+         text.SetText(std::to_string(input[idx]));
+         text.Render(projection);
+
+         pos.x += adv.x;
+      }
+
+      pos.y += adv.y;
+      pos.x = adv.x * 0.5f;
+   }
 
    //// Finish ImGui frame
    //ImGui::Render();
@@ -106,12 +163,32 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
    if (score == 9)
    {
       // Add to hash map
-      //if (TrailheadScore.find(Idx) == TrailheadScore.end())
-      //{
-      //   printf("Add (%d, %d)\n", x, y);
-      //}
+      if (TrailheadScore.find(Idx) == TrailheadScore.end())
+      {
+         //printf("Add (%d, %d)\n", x, y);
+         squares.push_back({Idx, 2});
+         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+      }
       TrailheadScore[Idx] = true;
       return;
+   }
+   else
+   {
+      bool found = false;
+      for (const auto& square : squares)
+      {
+         if (square.Index == Idx)
+         {
+            found = true;
+            break;
+         }
+      }
+
+      //if (!found)
+      {
+         squares.push_back({Idx, 1});
+      }
+      std::this_thread::sleep_for(std::chrono::milliseconds(20));
    }
 
    // Check up
@@ -127,18 +204,37 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
    check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
 }
 
+void check_trailhead_thread()
+{
+   while (!done)
+   {
+      uint64_t result = 0;
+
+      trailheads.clear();
+
+      for (size_t i = 0; i < input.size(); i++)
+      {
+         if (input[i] == 0)
+         {
+            squares.push_back({i, 0});
+            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            check_trailhead(input, i, -1, width, height, trailheads[i]);
+            result += trailheads[i].size();
+            //printf("Result: (%d, %d) %ld\n", i % width, i / width, trailheads[i].size());
+            squares.clear();
+         }
+      }
+
+      printf("Result: %ld\n", result);
+   }
+}
+
 int main()
 {
    std::ifstream file("../test.txt");
 
    if (file.is_open())
    {
-      std::vector<int> input;
-      std::unordered_map<int, std::unordered_map<int, bool>> trailheads;
-      int width = 0;
-      int height = 0;
-      uint64_t result = 0;
-
       while (1)
       {
          std::string line;
@@ -166,19 +262,9 @@ int main()
 
       printf("%d x %d\n", width, height);
       print_map(input, width, height);
-
-      for (size_t i = 0; i < input.size(); i++)
-      {
-         if (input[i] == 0)
-         {
-            check_trailhead(input, i, -1, width, height, trailheads[i]);
-            result += trailheads[i].size();
-            //printf("Result: (%d, %d) %ld\n", i % width, i / width, trailheads[i].size());
-         }
-      }
-
-      printf("Result: %ld\n", result);
    }
+
+   std::thread thr(check_trailhead_thread);
 
    // Start GLFW
    if (!glfwInit())
@@ -251,6 +337,20 @@ int main()
    text_shader = std::make_shared<CShader>("../../../shaders/text.vert", "../../../shaders/text.frag");
    rect_shader = std::make_shared<CShader>("../../../shaders/rect.vert", "../../../shaders/rect.frag");
 
+   // Calculate initial window size
+   CGlTextAtlas text = CGlTextAtlas(text_shader, 50.0f, 50.0f, 0.0f, 0.0f, CFontAtlas::FontMap["DroidSansMono"]);
+   text.SetColor(glm::vec4(1.0f));
+   text.SetText("0");
+   text.CalculateTextArea();
+
+   int window_width = text.GetSize().x * 4.0f * width;
+   int window_height = text.GetSize().y * 3.0f * height;
+   //int window_width = text.GetSize().x * width;
+   //int window_height = text.GetSize().y * height;
+
+   printf("text (%f, %f) win (%d, %d)\n", text.GetSize().x, text.GetSize().y, window_width, window_height);
+   glfwSetWindowSize(window, window_width, window_height);
+
    while (!glfwWindowShouldClose(window))
    {
       render();
@@ -271,6 +371,9 @@ int main()
       }
       end_frame = start_frame + frame_time;
    }
+
+   done = true;
+   thr.join();
 
    glfwDestroyWindow(window);
    glfwTerminate();
