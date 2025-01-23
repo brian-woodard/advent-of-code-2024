@@ -2,7 +2,7 @@
 in vec2 TexCoords;
 
 uniform sampler2D text;
-uniform vec3 textColor;
+uniform vec4 textColor;
 
 void main()
 {

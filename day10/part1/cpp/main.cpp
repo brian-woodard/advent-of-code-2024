@@ -88,7 +88,7 @@ int main()
          }
          else
          {
-            assert(width == line.length());
+            assert(width == (int)line.length());
          }
 
          for (const auto& c : line)
