@@ -117,8 +117,8 @@ void CGlTextAtlas::Render(const glm::mat4& Projection)
       float adjustedHeight = (glyph_data[c_idx].size_y * 1.0f) * mScale;
 
       // Calculate positions for the current glyph
-      float xpos = x + (glyph_data[c_idx].x_off * 1.0f);
-      float ypos = y - ((glyph_data[c_idx].size_y + glyph_data[c_idx].y_off) * 1.0f);
+      float xpos = x;// + (glyph_data[c_idx].x_off * 1.0f);
+      float ypos = y;// - ((glyph_data[c_idx].size_y + glyph_data[c_idx].y_off) * 1.0f);
 
       glm::vec2 tex_coord_ll;
       glm::vec2 tex_coord_ur;

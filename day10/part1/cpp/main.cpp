@@ -64,7 +64,7 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
 
 int main()
 {
-   std::ifstream file("../test.txt");
+   std::ifstream file("../input.txt");
 
    if (file.is_open())
    {
