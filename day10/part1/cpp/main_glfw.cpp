@@ -26,6 +26,7 @@ std::unordered_map<int, std::unordered_map<int, bool>> trailheads;
 int width = 0;
 int height = 0;
 bool done = false;
+bool pause = false;
 
 struct TSquare
 {
@@ -40,10 +41,10 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
    if (window == nullptr || scancode == -1 || mods == -1)
       return;
 
-   //if (key == GLFW_KEY_E && action == GLFW_PRESS)
-   //{
-   //   page_manager.HandleKeyboardInput(CPageManager::T_EDIT_KEY, true);
-   //}
+   if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+   {
+      pause = !pause;
+   }
 }
 
 void resize(GLFWwindow* window, int width, int height)
@@ -68,7 +69,7 @@ void render()
    // Clear the window with the background color
    GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
 
-   CGlTextAtlas text = CGlTextAtlas(text_shader, 0.0f, 0.0f, 0.0f, 0.0f, CFontAtlas::FontMap["DroidSansMono"], 0.5f, true);
+   CGlTextAtlas text = CGlTextAtlas(text_shader, 0.0f, 0.0f, 0.0f, 0.0f, CFontAtlas::FontMap["DroidSansMono"], 0.25f, true);
    text.SetColor(glm::vec4(1.0f, 0.0f, 0.0f, 1.0f));
 
    glm::vec2 adv = glm::vec2((100.0f / (float)width), (100.0f / (float)height));
@@ -160,6 +161,14 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
       return;
    }
 
+   if (pause)
+   {
+      while (pause)
+      {
+         std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      }
+   }
+
    if (score == 9)
    {
       // Add to hash map
@@ -167,7 +176,7 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
       {
          //printf("Add (%d, %d)\n", x, y);
          squares.push_back({Idx, 2});
-         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+         std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }
       TrailheadScore[Idx] = true;
       return;
@@ -188,20 +197,24 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
       {
          squares.push_back({Idx, 1});
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
    }
 
    // Check up
-   check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
+   if (y > 0)
+      check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
 
    // Check down 
-   check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
+   if (y < Height - 1)
+      check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
 
    // Check right 
-   check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
+   if (x < Width - 1)
+      check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
 
    // Check left 
-   check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
+   if (x > 0)
+      check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
 }
 
 void check_trailhead_thread()
@@ -217,7 +230,7 @@ void check_trailhead_thread()
          if (input[i] == 0)
          {
             squares.push_back({i, 0});
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             check_trailhead(input, i, -1, width, height, trailheads[i]);
             result += trailheads[i].size();
             //printf("Result: (%d, %d) %ld\n", i % width, i / width, trailheads[i].size());
@@ -231,7 +244,7 @@ void check_trailhead_thread()
 
 int main()
 {
-   std::ifstream file("../test.txt");
+   std::ifstream file("../input.txt");
 
    if (file.is_open())
    {
@@ -330,7 +343,7 @@ int main()
    auto end_frame = start_frame + frame_time;
 
    // Initialize fonts
-   CFontAtlas::FontMap["DroidSansMono"] = std::make_shared<CFontAtlas>("../../../fonts/DroidSansMono.ttf", 21.0f);
+   CFontAtlas::FontMap["DroidSansMono"] = std::make_shared<CFontAtlas>("../../../fonts/DroidSansMono.ttf", 12.0f);
 
    // Initialize shaders
    polygon_shader = std::make_shared<CShader>("../../../shaders/polygon.vert", "../../../shaders/polygon.frag");
@@ -343,10 +356,10 @@ int main()
    text.SetText("0");
    text.CalculateTextArea();
 
-   int window_width = text.GetSize().x * 4.0f * width;
-   int window_height = text.GetSize().y * 3.0f * height;
-   //int window_width = text.GetSize().x * width;
-   //int window_height = text.GetSize().y * height;
+   //int window_width = text.GetSize().x * 4.0f * width;
+   //int window_height = text.GetSize().y * 3.0f * height;
+   int window_width = text.GetSize().x * width;
+   int window_height = text.GetSize().y * height;
 
    printf("text (%f, %f) win (%d, %d)\n", text.GetSize().x, text.GetSize().y, window_width, window_height);
    glfwSetWindowSize(window, window_width, window_height);
