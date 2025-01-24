@@ -163,7 +163,6 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
 
    if (pause)
    {
-      printf(">>> Paused\n");
       while (pause)
       {
          std::this_thread::sleep_for(std::chrono::milliseconds(20));
@@ -177,7 +176,7 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
       {
          //printf("Add (%d, %d)\n", x, y);
          squares.push_back({Idx, 2});
-         std::this_thread::sleep_for(std::chrono::milliseconds(200));
+         std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }
       TrailheadScore[Idx] = true;
       return;
@@ -198,20 +197,24 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
       {
          squares.push_back({Idx, 1});
       }
-      std::this_thread::sleep_for(std::chrono::milliseconds(20));
+      std::this_thread::sleep_for(std::chrono::milliseconds(2));
    }
 
    // Check up
-   check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
+   if (y > 0)
+      check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
 
    // Check down 
-   check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
+   if (y < Height - 1)
+      check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
 
    // Check right 
-   check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
+   if (x < Width - 1)
+      check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
 
    // Check left 
-   check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
+   if (x > 0)
+      check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
 }
 
 void check_trailhead_thread()
@@ -227,7 +230,7 @@ void check_trailhead_thread()
          if (input[i] == 0)
          {
             squares.push_back({i, 0});
-            std::this_thread::sleep_for(std::chrono::milliseconds(20));
+            std::this_thread::sleep_for(std::chrono::milliseconds(2));
             check_trailhead(input, i, -1, width, height, trailheads[i]);
             result += trailheads[i].size();
             //printf("Result: (%d, %d) %ld\n", i % width, i / width, trailheads[i].size());

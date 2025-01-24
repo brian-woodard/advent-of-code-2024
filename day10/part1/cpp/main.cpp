@@ -50,16 +50,20 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
    }
 
    // Check up
-   check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
+   if (y > 0)
+      check_trailhead(Map, Idx - Width, score, Width, Height, TrailheadScore);
 
    // Check down 
-   check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
+   if (y < Height-1)
+      check_trailhead(Map, Idx + Width, score, Width, Height, TrailheadScore);
 
    // Check right 
-   check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
+   if (x < Width-1)
+      check_trailhead(Map, Idx + 1, score, Width, Height, TrailheadScore);
 
    // Check left 
-   check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
+   if (x > 0)
+      check_trailhead(Map, Idx - 1, score, Width, Height, TrailheadScore);
 }
 
 int main()
