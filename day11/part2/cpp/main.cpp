@@ -107,7 +107,7 @@ int main()
 
    print(input);
 
-   for (int i = 0; i < 25; i++)
+   for (int i = 0; i < 26; i++)
    {
       blink(input);
       printf("blink %d (size %d splits %d)\n", i+1, input.size(), splits);
