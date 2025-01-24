@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <list>
 #include <cstdint>
 
 uint64_t splits = 0;
@@ -10,9 +11,9 @@ uint64_t splits = 0;
 void print(const std::vector<uint64_t>& Input)
 {
    printf("Stones: ");
-   for (size_t i = 0; i < Input.size(); i++)
+   for (const auto& num : Input)
    {
-      printf("%d ", Input[i]);
+      printf("%d ", num);
    }
    printf("\n");
 }
@@ -33,10 +34,10 @@ uint64_t num_digits(uint64_t Value)
    return digits;
 }
 
-void split(std::vector<uint64_t>& Input, size_t Index)
+void split(std::vector<uint64_t>& Input, uint64_t& Num, size_t Index)
 {
-   uint64_t digits = num_digits(Input[Index]);
-   uint64_t value = Input[Index];
+   uint64_t digits = num_digits(Num);
+   uint64_t value = Num;
    uint64_t value_hi = 0;
    uint64_t value_lo = 0;
 
@@ -61,27 +62,31 @@ void split(std::vector<uint64_t>& Input, size_t Index)
       }
    }
 
-   Input[Index] = value_hi;
-   Input.insert(Input.begin() + Index + 1, value_lo);
+   Num = value_hi;
+   //Input.insert(std::next(Input.begin(), Index), value_lo); // std::list
+   Input.insert(Input.begin() + Index + 1, value_lo); // std::vector
    splits++;
 }
 
 void blink(std::vector<uint64_t>& Input)
 {
+   //size_t i = 0;
+   //for (auto& num : Input)
    for (size_t i = 0; i < Input.size(); i++)
    {
-      if (Input[i] == 0)
+      uint64_t& num = Input[i];
+      if (num == 0)
       {
-         Input[i] = 1;
+         num = 1;
       }
-      else if (num_digits(Input[i]) % 2 != 0)
+      else if (num_digits(num) % 2 != 0)
       {
-         Input[i] *= 2024;
+         num *= 2024;
       }
       else
       {
          // split into two stones
-         split(Input, i);
+         split(Input, num, i);
          i++;
       }
    }
@@ -107,7 +112,7 @@ int main()
 
    print(input);
 
-   for (int i = 0; i < 26; i++)
+   for (int i = 0; i < 27; i++)
    {
       blink(input);
       printf("blink %d (size %d splits %d)\n", i+1, input.size(), splits);
