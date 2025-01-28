@@ -68,7 +68,7 @@ void check_trailhead(const std::vector<int>& Map, int Idx, int PrevScore, int Wi
 
 int main()
 {
-   std::ifstream file("../input.txt");
+   std::ifstream file("../test.txt");
 
    if (file.is_open())
    {
@@ -112,7 +112,7 @@ int main()
          {
             check_trailhead(input, i, -1, width, height, trailheads[i]);
             result += trailheads[i].size();
-            //printf("Result: (%d, %d) %d\n", i % width, i / width, trailheads[i].size());
+            printf("Result: (%d, %d) %d\n", i % width, i / width, trailheads[i].size());
          }
       }
 
