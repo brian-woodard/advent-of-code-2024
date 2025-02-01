@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include "Stopwatch.h"
 
 void print(const std::vector<uint32_t>& Input)
 {
@@ -60,12 +61,14 @@ void split(std::vector<uint32_t>& Input, size_t Index)
    }
 
    Input[Index] = value_hi;
-   Input.insert(Input.begin() + Index + 1, value_lo);
+   Input.push_back(value_lo);
+   //Input.insert(Input.begin() + Index + 1, value_lo);
 }
 
 void blink(std::vector<uint32_t>& Input)
 {
-   for (size_t i = 0; i < Input.size(); i++)
+   size_t size = Input.size();
+   for (size_t i = 0; i < size; i++)
    {
       if (Input[i] == 0)
       {
@@ -79,15 +82,17 @@ void blink(std::vector<uint32_t>& Input)
       {
          // split into two stones
          split(Input, i);
-         i++;
+         //i++;
       }
    }
 }
 
 int main()
 {
-   std::ifstream file("../small.txt");
+   std::ifstream file("../input.txt");
    std::vector<uint32_t> input;
+
+   input.reserve(100000000);
 
    if (file.is_open())
    {
@@ -104,10 +109,31 @@ int main()
 
    print(input);
 
-   for (int i = 0; i < 25; i++)
+   uint64_t prev_size = input.size();
+   double prev_time = 0.0;
+   for (int i = 0; i < 45; i++)
    {
-      blink(input);
-      printf("blink %d %ld\n", i+1, input.size());
+      double curr_time;
+
+      {
+         CStopwatch timer(&curr_time);
+         blink(input);
+      }
+
+      uint64_t size = input.size();
+
+      double size_increase = ((double)size - (double)prev_size) / (double)prev_size;
+      prev_size = size;
+
+      double time_increase;
+      if (i > 0)
+      {
+         time_increase = (curr_time - prev_time) / prev_time;
+      }
+      prev_time = curr_time;
+
+      //printf("blink %d %ld (%.1f) time %.2fs (%.1f)\n", i+1, input.size(), size_increase * 100.0, curr_time, time_increase * 100.0);
+
       //print(input);
    }
 

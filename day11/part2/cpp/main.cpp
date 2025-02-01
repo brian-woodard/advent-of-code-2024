@@ -87,9 +87,74 @@ void blink(std::vector<uint32_t>& Input)
    }
 }
 
+void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
+{
+   uint64_t value = Num1;
+   uint64_t value_hi = 0;
+   uint64_t value_lo = 0;
+
+   uint32_t mag = 1;
+
+   for (uint32_t i = 0; i < Digits; i++)
+   {
+      if (i == Digits / 2)
+         mag = 1;
+
+      if (i < Digits / 2)
+      {
+         value_lo += (value % 10) * mag;
+         mag *= 10;
+         value /= 10;
+      }
+      else
+      {
+         value_hi += (value % 10) * mag;
+         mag *= 10;
+         value /= 10;
+      }
+   }
+
+   Num1 = value_hi;
+   Num2 = value_lo;
+}
+
+uint64_t blink_recursive(int Count, uint64_t Num)
+{
+   if (Count > 56)
+   {
+      return 1;
+   }
+
+   if (Num != 0)
+   {
+      uint32_t digits = num_digits(Num);
+
+      if (digits % 2 != 0)
+      {
+         return blink_recursive(Count + 1, Num * 2024);
+      }
+      else
+      {
+         uint64_t result = 0;
+         uint64_t num2 = 0;
+
+         // split into two stones
+         split(Num, num2, digits);
+
+         result = blink_recursive(Count + 1, Num);
+         result += blink_recursive(Count + 1, num2);
+         return result;
+      }
+   }
+   else
+   {
+      return blink_recursive(Count + 1, 1);
+   }
+}
+
 int main()
 {
-   std::ifstream file("../input.txt");
+   std::ifstream file("../small.txt");
    std::vector<uint32_t> input;
 
    input.reserve(100000000);
@@ -109,6 +174,9 @@ int main()
 
    print(input);
 
+   uint64_t result = 0;
+
+#if 0
    uint64_t prev_size = input.size();
    double prev_time = 0.0;
    for (int i = 0; i < 45; i++)
@@ -132,11 +200,35 @@ int main()
       }
       prev_time = curr_time;
 
-      //printf("blink %d %ld (%.1f) time %.2fs (%.1f)\n", i+1, input.size(), size_increase * 100.0, curr_time, time_increase * 100.0);
+      printf("blink %d %ld (%.1f) time %.2fs (%.1f)\n", i+1, input.size(), size_increase * 100.0, curr_time, time_increase * 100.0);
 
       //print(input);
    }
 
-   // 204469 - too high
-   printf("Result: %ld\n", input.size());
+   result = input.size();
+#else
+   result = blink_recursive(1, input[0]);
+#endif
+
+   printf("Result: %ld\n", result);
 }
+
+// Single threaded 55 blinks with small.txt
+// [sim_local@localhost cpp]$ time ./main 
+// Stones: 0 
+// Result: 5362947711
+// 
+// real	1m16.187s
+// user	1m11.103s
+// sys	0m0.004s
+
+// Single threaded 56 blinks with small.txt
+// [sim_local@localhost cpp]$ time ./main
+// Stones: 0
+// Result: 8161193535
+// 
+// real	1m36.532s
+// user	1m31.443s
+// sys	0m0.005s
+
+// TODO: Try multi-threading on input.txt, one thread for each starting stone
