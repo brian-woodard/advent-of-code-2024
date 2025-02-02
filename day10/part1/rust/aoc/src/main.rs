@@ -4,7 +4,7 @@ use std::io::BufRead;
 use std::collections::HashMap;
 
 fn main() {
-    let file = File::open("../../test.txt").expect("Failed to open file.");
+    let file = File::open("../../input.txt").expect("Failed to open file.");
     let reader = BufReader::new(file);
     let mut width: i32 = 0;
     let mut height: i32 = 0;
@@ -33,7 +33,7 @@ fn main() {
 
     for i in 0..input.len() {
         if input[i] == 0 {
-            if let Some(trailhead) = trailheads.get_mut(&i) {
+            if let Some(_trailhead) = trailheads.get_mut(&i) {
                 // do nothing
             } else {
                 trailheads.insert(i, HashMap::new());
@@ -51,13 +51,11 @@ fn check_trailhead(map: &Vec<u8>, idx: i32, prev_score: i32, width: i32, height:
 {
     let x = idx as i32 % width;
     let y = idx as i32 / width;
-    let mut score = 0;
+    let score = map[idx as usize] as i32;
 
     if x < 0 || x >= width || y < 0 || y >= height {
         return;
     }
-
-    score = map[idx as usize] as i32;
 
     if score != prev_score + 1 {
         return;
@@ -79,7 +77,7 @@ fn check_trailhead(map: &Vec<u8>, idx: i32, prev_score: i32, width: i32, height:
     }
 
     // Check right
-    if y < width-1 {
+    if x < width-1 {
         check_trailhead(map, idx + 1, score, width, height, trailhead_score);
     }
 
