@@ -104,7 +104,7 @@ int main()
 
    print(input);
 
-   for (int i = 0; i < 25; i++)
+   for (int i = 0; i < 35; i++)
    {
       blink(input);
       printf("blink %d %ld\n", i+1, input.size());

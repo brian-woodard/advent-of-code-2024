@@ -95,6 +95,7 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
 
    uint32_t mag = 1;
 
+#if 1
    for (uint32_t i = 0; i < Digits; i++)
    {
       if (i == Digits / 2)
@@ -113,6 +114,24 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
          value /= 10;
       }
    }
+#else
+   uint32_t half_digits = Digits / 2;
+
+   for (uint32_t i = 0; i < half_digits; i++)
+   {
+      value_lo += (value % 10) * mag;
+      mag *= 10;
+      value /= 10;
+   }
+
+   mag = 1;
+   for (uint32_t i = half_digits; i < Digits; i++)
+   {
+      value_hi += (value % 10) * mag;
+      mag *= 10;
+      value /= 10;
+   }
+#endif
 
    Num1 = value_hi;
    Num2 = value_lo;
@@ -120,7 +139,7 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
 
 uint64_t blink_recursive(int Count, uint64_t Num)
 {
-   if (Count > 56)
+   if (Count > 60)
    {
       return 1;
    }
@@ -230,5 +249,14 @@ int main()
 // real	1m36.532s
 // user	1m31.443s
 // sys	0m0.005s
+
+// Single threaded 60 blinks with small.txt
+// [sim_local@localhost cpp]$ time ./main
+// Stones: 0
+// Result: 43369895096
+// 
+// real	5m5.334s
+// user	4m58.856s
+// sys	0m0.001s
 
 // TODO: Try multi-threading on input.txt, one thread for each starting stone
