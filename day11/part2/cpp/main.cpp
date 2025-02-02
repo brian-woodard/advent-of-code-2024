@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 #include <cstdint>
+#include <cmath>
 #include "Stopwatch.h"
 
 void print(const std::vector<uint32_t>& Input)
@@ -137,9 +138,11 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
    Num2 = value_lo;
 }
 
+uint64_t max_blinks;
+
 uint64_t blink_recursive(int Count, uint64_t Num)
 {
-   if (Count > 60)
+   if (Count > max_blinks)
    {
       return 1;
    }
@@ -173,63 +176,38 @@ uint64_t blink_recursive(int Count, uint64_t Num)
 
 int main()
 {
-   std::ifstream file("../small.txt");
-   std::vector<uint32_t> input;
+   //std::ifstream file("../small.txt");
+   //std::vector<uint32_t> input;
 
-   input.reserve(100000000);
+   //input.reserve(100000000);
 
-   if (file.is_open())
-   {
-      std::stringstream buffer;
+   //if (file.is_open())
+   //{
+   //   std::stringstream buffer;
 
-      buffer << file.rdbuf();
+   //   buffer << file.rdbuf();
 
-      uint32_t num;
-      while (buffer >> num)
-      {
-         input.push_back(num);
-      }
-   }
+   //   uint32_t num;
+   //   while (buffer >> num)
+   //   {
+   //      input.push_back(num);
+   //   }
+   //}
 
-   print(input);
+   //print(input);
 
+   printf("Start blinking...\n");
+
+   double time_sec = 0.0;
    uint64_t result = 0;
+   max_blinks = 48;
 
-#if 0
-   uint64_t prev_size = input.size();
-   double prev_time = 0.0;
-   for (int i = 0; i < 45; i++)
    {
-      double curr_time;
-
-      {
-         CStopwatch timer(&curr_time);
-         blink(input);
-      }
-
-      uint64_t size = input.size();
-
-      double size_increase = ((double)size - (double)prev_size) / (double)prev_size;
-      prev_size = size;
-
-      double time_increase;
-      if (i > 0)
-      {
-         time_increase = (curr_time - prev_time) / prev_time;
-      }
-      prev_time = curr_time;
-
-      printf("blink %d %ld (%.1f) time %.2fs (%.1f)\n", i+1, input.size(), size_increase * 100.0, curr_time, time_increase * 100.0);
-
-      //print(input);
+      CStopwatch timer(&time_sec);
+      result = blink_recursive(1, 0);
    }
 
-   result = input.size();
-#else
-   result = blink_recursive(1, input[0]);
-#endif
-
-   printf("Result: %ld\n", result);
+   printf("Result: %ld (%ld blinks) took %d minutes %.2f secs\n", result, max_blinks, (int)time_sec / 60, fmod(time_sec, 60.0));
 }
 
 // Single threaded 55 blinks with small.txt
