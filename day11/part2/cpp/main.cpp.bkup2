@@ -87,10 +87,14 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
    //uint32_t half_digits = Digits / 2;
    uint32_t half_digits = Digits >> 1;
 
+#if 1
    for (uint32_t i = 0; i < half_digits; i++)
    {
       mag *= 10;
    }
+#else
+   mag = pow(10, half_digits);
+#endif
 
    value_hi = value / mag;
    value_lo = value % mag;
@@ -121,7 +125,8 @@ uint64_t blink_recursive(int Count, uint64_t Num)
       //if (digits % 2 != 0)
       if (digits & 0x1 != 0)
       {
-         return blink_recursive(Count + 1, Num * 2024);
+         uint64_t new_value = Num * 2024;
+         return blink_recursive(Count + 1, new_value);
       }
       else
       {
@@ -150,7 +155,7 @@ int main()
 
    double time_sec = 0.0;
    uint64_t result = 0;
-   max_blinks = 65;
+   max_blinks = 68;
 
    {
       CStopwatch timer(&time_sec);

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 #include <cstdint>
 #include <cmath>
 #include "Stopwatch.h"
@@ -19,6 +20,7 @@ void print(const std::vector<uint32_t>& Input)
 
 uint32_t num_digits(uint32_t Value)
 {
+#if 0
    uint32_t digits = 0;
 
    if (Value == 0)
@@ -31,61 +33,28 @@ uint32_t num_digits(uint32_t Value)
    }
 
    return digits;
-}
-
-void split(std::vector<uint32_t>& Input, size_t Index)
-{
-   uint32_t digits = num_digits(Input[Index]);
-   uint32_t value = Input[Index];
-   uint32_t value_hi = 0;
-   uint32_t value_lo = 0;
-
-   uint32_t mag = 1;
-
-   for (uint32_t i = 0; i < digits; i++)
-   {
-      if (i == digits / 2)
-         mag = 1;
-
-      if (i < digits / 2)
-      {
-         value_lo += (value % 10) * mag;
-         mag *= 10;
-         value /= 10;
-      }
-      else
-      {
-         value_hi += (value % 10) * mag;
-         mag *= 10;
-         value /= 10;
-      }
-   }
-
-   Input[Index] = value_hi;
-   Input.push_back(value_lo);
-   //Input.insert(Input.begin() + Index + 1, value_lo);
-}
-
-void blink(std::vector<uint32_t>& Input)
-{
-   size_t size = Input.size();
-   for (size_t i = 0; i < size; i++)
-   {
-      if (Input[i] == 0)
-      {
-         Input[i] = 1;
-      }
-      else if (num_digits(Input[i]) % 2 != 0)
-      {
-         Input[i] *= 2024;
-      }
-      else
-      {
-         // split into two stones
-         split(Input, i);
-         //i++;
-      }
-   }
+#else
+   if (Value < 10)
+      return 1;
+   else if (Value < 100)
+      return 2;
+   else if (Value < 1000)
+      return 3;
+   else if (Value < 10000)
+      return 4;
+   else if (Value < 100000)
+      return 5;
+   else if (Value < 1000000)
+      return 6;
+   else if (Value < 10000000)
+      return 7;
+   else if (Value < 100000000)
+      return 8;
+   else if (Value < 1000000000)
+      return 9;
+   else if (Value < 10000000000)
+      return 10;
+#endif
 }
 
 void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
@@ -96,7 +65,7 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
 
    uint32_t mag = 1;
 
-#if 1
+#if 0
    for (uint32_t i = 0; i < Digits; i++)
    {
       if (i == Digits / 2)
@@ -116,22 +85,16 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
       }
    }
 #else
-   uint32_t half_digits = Digits / 2;
+   //uint32_t half_digits = Digits / 2;
+   uint32_t half_digits = Digits >> 1;
 
    for (uint32_t i = 0; i < half_digits; i++)
    {
-      value_lo += (value % 10) * mag;
       mag *= 10;
-      value /= 10;
    }
 
-   mag = 1;
-   for (uint32_t i = half_digits; i < Digits; i++)
-   {
-      value_hi += (value % 10) * mag;
-      mag *= 10;
-      value /= 10;
-   }
+   value_hi = value / mag;
+   value_lo = value % mag;
 #endif
 
    Num1 = value_hi;
@@ -139,102 +102,101 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
 }
 
 uint64_t max_blinks;
+std::unordered_map<uint64_t, uint64_t> stones[2];
+int in = 0;
+int out = 1;
 
-uint64_t blink_recursive(int Count, uint64_t Num)
+void blink(uint64_t Num)
 {
-   if (Count > max_blinks)
-   {
-      return 1;
-   }
+   uint64_t new_value1;
+   uint64_t new_value2;
 
    if (Num != 0)
    {
       uint32_t digits = num_digits(Num);
 
-      if (digits % 2 != 0)
+      if (digits & 0x1 != 0)
       {
-         return blink_recursive(Count + 1, Num * 2024);
+         new_value1 = Num * 2024;
+         if (stones[out].count(new_value1) == 0)
+            stones[out][new_value1] = stones[in][Num];
+         else
+            stones[out][new_value1] += stones[in][Num];
       }
       else
       {
-         uint64_t result = 0;
-         uint64_t num2 = 0;
-
          // split into two stones
-         split(Num, num2, digits);
+         new_value1 = Num;
+         split(new_value1, new_value2, digits);
 
-         result = blink_recursive(Count + 1, Num);
-         result += blink_recursive(Count + 1, num2);
-         return result;
+         if (stones[out].count(new_value1) == 0)
+            stones[out][new_value1] = stones[in][Num];
+         else
+            stones[out][new_value1] += stones[in][Num];
+
+         if (stones[out].count(new_value2) == 0)
+            stones[out][new_value2] = stones[in][Num];
+         else
+            stones[out][new_value2] += stones[in][Num];
       }
+      stones[in][Num] = 0;
    }
    else
    {
-      return blink_recursive(Count + 1, 1);
+      if (stones[out].count(1) == 0)
+         stones[out][1] = stones[in][0];
+      else
+         stones[out][1] += stones[in][0];
+      stones[in][0] = 0;
    }
 }
 
 int main()
 {
-   //std::ifstream file("../small.txt");
-   //std::vector<uint32_t> input;
-
-   //input.reserve(100000000);
-
-   //if (file.is_open())
-   //{
-   //   std::stringstream buffer;
-
-   //   buffer << file.rdbuf();
-
-   //   uint32_t num;
-   //   while (buffer >> num)
-   //   {
-   //      input.push_back(num);
-   //   }
-   //}
-
-   //print(input);
-
    printf("Start blinking...\n");
 
    double time_sec = 0.0;
    uint64_t result = 0;
-   max_blinks = 48;
+   max_blinks = 75;
+   std::ifstream file("../input.txt");
+   std::vector<uint32_t> input;
+
+   if (file.is_open())
+   {
+      std::stringstream buffer;
+
+      buffer << file.rdbuf();
+
+      uint32_t num;
+      while (buffer >> num)
+      {
+         input.push_back(num);
+         stones[in][num] = 1;
+      }
+   }
+
+   print(input);
 
    {
       CStopwatch timer(&time_sec);
-      result = blink_recursive(1, 0);
+
+      for (size_t i = 0; i < max_blinks; i++)
+      {
+         for (auto& stone : stones[in])
+            blink(stone.first);
+
+         in = 1 - in;
+         out = 1 - out;
+      }
+
+      for (auto& stone : stones[in])
+         result += stone.second;
    }
 
-   printf("Result: %ld (%ld blinks) took %d minutes %.2f secs\n", result, max_blinks, (int)time_sec / 60, fmod(time_sec, 60.0));
+   // 233510865551799 - too high
+   printf("Result: %ld (%ld blinks) took %d minutes %.3f secs\n",
+      result,
+      max_blinks,
+      (int)time_sec / 60,
+      fmod(time_sec, 60.0));
 }
-
-// Single threaded 55 blinks with small.txt
-// [sim_local@localhost cpp]$ time ./main 
-// Stones: 0 
-// Result: 5362947711
-// 
-// real	1m16.187s
-// user	1m11.103s
-// sys	0m0.004s
-
-// Single threaded 56 blinks with small.txt
-// [sim_local@localhost cpp]$ time ./main
-// Stones: 0
-// Result: 8161193535
-// 
-// real	1m36.532s
-// user	1m31.443s
-// sys	0m0.005s
-
-// Single threaded 60 blinks with small.txt
-// [sim_local@localhost cpp]$ time ./main
-// Stones: 0
-// Result: 43369895096
-// 
-// real	5m5.334s
-// user	4m58.856s
-// sys	0m0.001s
-
-// TODO: Try multi-threading on input.txt, one thread for each starting stone
