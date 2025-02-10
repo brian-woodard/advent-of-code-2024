@@ -5,7 +5,7 @@
 #include <vector>
 #include <cstdint>
 
-void print(const std::vector<uint32_t>& Input)
+void print(const std::vector<uint64_t>& Input)
 {
    printf("Stones: ");
    for (size_t i = 0; i < Input.size(); i++)
@@ -15,9 +15,9 @@ void print(const std::vector<uint32_t>& Input)
    printf("\n");
 }
 
-uint32_t num_digits(uint32_t Value)
+uint64_t num_digits(uint64_t Value)
 {
-   uint32_t digits = 0;
+   uint64_t digits = 0;
 
    if (Value == 0)
       return 1;
@@ -31,16 +31,16 @@ uint32_t num_digits(uint32_t Value)
    return digits;
 }
 
-void split(std::vector<uint32_t>& Input, size_t Index)
+void split(std::vector<uint64_t>& Input, size_t Index)
 {
-   uint32_t digits = num_digits(Input[Index]);
-   uint32_t value = Input[Index];
-   uint32_t value_hi = 0;
-   uint32_t value_lo = 0;
+   uint64_t digits = num_digits(Input[Index]);
+   uint64_t value = Input[Index];
+   uint64_t value_hi = 0;
+   uint64_t value_lo = 0;
 
-   uint32_t mag = 1;
+   uint64_t mag = 1;
 
-   for (uint32_t i = 0; i < digits; i++)
+   for (uint64_t i = 0; i < digits; i++)
    {
       if (i == digits / 2)
          mag = 1;
@@ -63,7 +63,7 @@ void split(std::vector<uint32_t>& Input, size_t Index)
    Input.insert(Input.begin() + Index + 1, value_lo);
 }
 
-void blink(std::vector<uint32_t>& Input)
+void blink(std::vector<uint64_t>& Input)
 {
    for (size_t i = 0; i < Input.size(); i++)
    {
@@ -86,8 +86,8 @@ void blink(std::vector<uint32_t>& Input)
 
 int main()
 {
-   std::ifstream file("../small.txt");
-   std::vector<uint32_t> input;
+   std::ifstream file("../input.txt");
+   std::vector<uint64_t> input;
 
    if (file.is_open())
    {
@@ -95,7 +95,7 @@ int main()
 
       buffer << file.rdbuf();
 
-      uint32_t num;
+      uint64_t num;
       while (buffer >> num)
       {
          input.push_back(num);
@@ -104,7 +104,7 @@ int main()
 
    print(input);
 
-   for (int i = 0; i < 35; i++)
+   for (int i = 0; i < 25; i++)
    {
       blink(input);
       printf("blink %d %ld\n", i+1, input.size());
