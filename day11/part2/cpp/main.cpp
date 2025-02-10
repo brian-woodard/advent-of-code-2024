@@ -8,7 +8,7 @@
 #include <cmath>
 #include "Stopwatch.h"
 
-void print(const std::vector<uint32_t>& Input)
+void print(const std::vector<uint64_t>& Input)
 {
    printf("Stones: ");
    for (size_t i = 0; i < Input.size(); i++)
@@ -18,10 +18,10 @@ void print(const std::vector<uint32_t>& Input)
    printf("\n");
 }
 
-uint32_t num_digits(uint32_t Value)
+uint64_t num_digits(uint64_t Value)
 {
-#if 0
-   uint32_t digits = 0;
+#if 1
+   uint64_t digits = 0;
 
    if (Value == 0)
       return 1;
@@ -54,19 +54,21 @@ uint32_t num_digits(uint32_t Value)
       return 9;
    else if (Value < 10000000000)
       return 10;
+
+   return 0;
 #endif
 }
 
-void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
+void split(uint64_t& Num1, uint64_t& Num2, uint64_t Digits)
 {
    uint64_t value = Num1;
    uint64_t value_hi = 0;
    uint64_t value_lo = 0;
 
-   uint32_t mag = 1;
+   uint64_t mag = 1;
 
-#if 0
-   for (uint32_t i = 0; i < Digits; i++)
+#if 1
+   for (uint64_t i = 0; i < Digits; i++)
    {
       if (i == Digits / 2)
          mag = 1;
@@ -85,10 +87,10 @@ void split(uint64_t& Num1, uint64_t& Num2, uint32_t Digits)
       }
    }
 #else
-   //uint32_t half_digits = Digits / 2;
-   uint32_t half_digits = Digits >> 1;
+   //uint64_t half_digits = Digits / 2;
+   uint64_t half_digits = Digits >> 1;
 
-   for (uint32_t i = 0; i < half_digits; i++)
+   for (uint64_t i = 0; i < half_digits; i++)
    {
       mag *= 10;
    }
@@ -113,9 +115,9 @@ void blink(uint64_t Num)
 
    if (Num != 0)
    {
-      uint32_t digits = num_digits(Num);
+      uint64_t digits = num_digits(Num);
 
-      if (digits & 0x1 != 0)
+      if (digits % 2 != 0)
       {
          new_value1 = Num * 2024;
          if (stones[out].count(new_value1) == 0)
@@ -139,7 +141,6 @@ void blink(uint64_t Num)
          else
             stones[out][new_value2] += stones[in][Num];
       }
-      stones[in][Num] = 0;
    }
    else
    {
@@ -147,8 +148,8 @@ void blink(uint64_t Num)
          stones[out][1] = stones[in][0];
       else
          stones[out][1] += stones[in][0];
-      stones[in][0] = 0;
    }
+   stones[in][Num] = 0;
 }
 
 int main()
@@ -159,7 +160,7 @@ int main()
    uint64_t result = 0;
    max_blinks = 75;
    std::ifstream file("../input.txt");
-   std::vector<uint32_t> input;
+   std::vector<uint64_t> input;
 
    if (file.is_open())
    {
@@ -167,7 +168,7 @@ int main()
 
       buffer << file.rdbuf();
 
-      uint32_t num;
+      uint64_t num;
       while (buffer >> num)
       {
          input.push_back(num);
@@ -194,6 +195,7 @@ int main()
    }
 
    // 233510865551799 - too high
+   // 223894720281135
    printf("Result: %ld (%ld blinks) took %d minutes %.3f secs\n",
       result,
       max_blinks,
