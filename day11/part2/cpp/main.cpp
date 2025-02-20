@@ -159,7 +159,7 @@ int main()
    double time_sec = 0.0;
    uint64_t result = 0;
    max_blinks = 75;
-   std::ifstream file("../input.txt");
+   std::ifstream file("../test.txt");
    std::vector<uint64_t> input;
 
    if (file.is_open())
