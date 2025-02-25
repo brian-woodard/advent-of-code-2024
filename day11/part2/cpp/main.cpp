@@ -159,7 +159,7 @@ int main()
    double time_sec = 0.0;
    uint64_t result = 0;
    max_blinks = 75;
-   std::ifstream file("../test.txt");
+   std::ifstream file("../input.txt");
    std::vector<uint64_t> input;
 
    if (file.is_open())
@@ -188,6 +188,20 @@ int main()
 
          in = 1 - in;
          out = 1 - out;
+
+         //printf("{");
+         //for (auto& stone: stones[out])
+         //{
+         //   printf("%d: %d, ", stone.first, stone.second);
+         //}
+         //printf("}\n");
+
+         //printf("{");
+         //for (auto& stone: stones[in])
+         //{
+         //   printf("%d: %d, ", stone.first, stone.second);
+         //}
+         //printf("}\n");
       }
 
       for (auto& stone : stones[in])
