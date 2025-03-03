@@ -38,6 +38,82 @@ void print_region(const TRegion& Region)
    printf("\n");
 }
 
+void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, int Idx, char Value)
+{
+   int w = Region.Width;
+
+   Region.Map[Idx] = 'x';
+   Subregion.Area++;
+
+   // Check left
+   if (Idx - 1 >= 0)
+   {
+      if (Region.Map[Idx - 1] == Value)
+      {
+         calc_area_and_perimeter_recursive(Region, Subregion, Idx - 1, Value);
+      }
+      else if (Region.Map[Idx - 1] == '.')
+      {
+         Subregion.Perimeter++;
+      }
+   }
+   else
+   {
+      Subregion.Perimeter++;
+   }
+
+   // Check right
+   if (Idx + 1 < (int)Region.Map.size())
+   {
+      if (Region.Map[Idx + 1] == Value)
+      {
+         calc_area_and_perimeter_recursive(Region, Subregion, Idx + 1, Value);
+      }
+      else if (Region.Map[Idx + 1] == '.')
+      {
+         Subregion.Perimeter++;
+      }
+   }
+   else
+   {
+      Subregion.Perimeter++;
+   }
+
+   // Check up
+   if (Idx - w >= 0)
+   {
+      if (Region.Map[Idx - w] == Value)
+      {
+         calc_area_and_perimeter_recursive(Region, Subregion, Idx - w, Value);
+      }
+      else if (Region.Map[Idx - w] == '.')
+      {
+         Subregion.Perimeter++;
+      }
+   }
+   else
+   {
+      Subregion.Perimeter++;
+   }
+
+   // Check down
+   if (Idx + w < (int)Region.Map.size())
+   {
+      if (Region.Map[Idx + w] == Value)
+      {
+         calc_area_and_perimeter_recursive(Region, Subregion, Idx + w, Value);
+      }
+      else if (Region.Map[Idx + w] == '.')
+      {
+         Subregion.Perimeter++;
+      }
+   }
+   else
+   {
+      Subregion.Perimeter++;
+   }
+}
+
 void calc_area_and_perimeter(TRegion& Region)
 {
    bool done = false;
@@ -46,30 +122,15 @@ void calc_area_and_perimeter(TRegion& Region)
    {
       TSubregion subregion = {};
       int        idx = -1;
-      int        w = Region.Width;
-      char       region = 0;
-
-      break;
 
       for (int i = 0; i < (int)Region.Map.size(); i++)
       {
          if (Region.Map[i] != '.' && Region.Map[i] != 'x')
          {
-            region = Region.Map[i];
+            calc_area_and_perimeter_recursive(Region, subregion, i, Region.Map[i]);
 
-            subregion.Area++;
-
-            if (i - 1 >= 0 && Region.Map[i - 1] != region)
-               subregion.Perimeter++;
-
-            if (i + 1 < (int)Region.Map.size() && Region.Map[i + 1] != region)
-               subregion.Perimeter++;
-
-            if (i - w >= 0 && Region.Map[i - w] != region)
-               subregion.Perimeter++;
-
-            if (i + w < (int)Region.Map.size() && Region.Map[i + w] != region)
-               subregion.Perimeter++;
+            subregion.Cost = subregion.Area * subregion.Perimeter;
+            Region.Subregions.push_back(subregion);
 
             idx = i;
             break;
@@ -78,19 +139,15 @@ void calc_area_and_perimeter(TRegion& Region)
 
       if (idx == -1)
          break;
-
-      while (idx < (int)Region.Map.size())
-      {
-         // look right for next char
-      }
    }
 }
 
 int main()
 {
-   std::fstream file("../test1.txt"); // 140
+   //std::fstream file("../test1.txt"); // 140
    //std::fstream file("../test2.txt"); // 772
    //std::fstream file("../test3.txt"); // 1930
+   std::fstream file("../test4.txt"); // 132?
 
    if (file.is_open())
    {
@@ -99,6 +156,7 @@ int main()
       TRegion map = {};
       int width = 0;
       int height = 0;
+      uint64_t cost = 0;
 
       while (!file.eof())
       {
@@ -160,6 +218,20 @@ int main()
 
          // Calculate are and perimeter for each sub-region
          calc_area_and_perimeter(val);
+
+         print_region(val);
+
+         for (const auto& subregion : val.Subregions)
+         {
+            printf("Subregion cost %d (%d x %d)\n",
+                   subregion.Cost,
+                   subregion.Area,
+                   subregion.Perimeter);
+
+            cost += subregion.Cost;
+         }
       }
+
+      printf("Total cost: %ld\n", cost);
    }
 }
