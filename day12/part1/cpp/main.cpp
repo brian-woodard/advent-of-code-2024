@@ -41,12 +41,14 @@ void print_region(const TRegion& Region)
 void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, int Idx, char Value)
 {
    int w = Region.Width;
+   int x = Idx % Region.Width;
+   int y = Idx / Region.Width;
 
    Region.Map[Idx] = 'x';
    Subregion.Area++;
 
    // Check left
-   if (Idx - 1 >= 0)
+   if (x - 1 >= 0)
    {
       if (Region.Map[Idx - 1] == Value)
       {
@@ -63,7 +65,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    }
 
    // Check right
-   if (Idx + 1 < (int)Region.Map.size())
+   if (x + 1 < Region.Width)
    {
       if (Region.Map[Idx + 1] == Value)
       {
@@ -80,7 +82,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    }
 
    // Check up
-   if (Idx - w >= 0)
+   if (y - 1 >= 0)
    {
       if (Region.Map[Idx - w] == Value)
       {
@@ -97,7 +99,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    }
 
    // Check down
-   if (Idx + w < (int)Region.Map.size())
+   if (y + 1 < Region.Height)
    {
       if (Region.Map[Idx + w] == Value)
       {
@@ -147,7 +149,8 @@ int main()
    //std::fstream file("../test1.txt"); // 140
    //std::fstream file("../test2.txt"); // 772
    //std::fstream file("../test3.txt"); // 1930
-   std::fstream file("../test4.txt"); // 132?
+   //std::fstream file("../test4.txt"); // 132
+   std::fstream file("../input.txt");
 
    if (file.is_open())
    {
@@ -185,7 +188,7 @@ int main()
 
       printf("%d x %d\n", width, height);
 
-      print_region(map);
+      //print_region(map);
 
       for (int i = 0; i < (int)map.Map.size(); i++)
       {
@@ -213,20 +216,20 @@ int main()
 
       for (auto& [key, val] : regions)
       {
-         printf("%c: \n", key);
-         print_region(val);
+         //printf("%c: \n", key);
+         //print_region(val);
 
          // Calculate are and perimeter for each sub-region
          calc_area_and_perimeter(val);
 
-         print_region(val);
+         //print_region(val);
 
          for (const auto& subregion : val.Subregions)
          {
-            printf("Subregion cost %d (%d x %d)\n",
-                   subregion.Cost,
-                   subregion.Area,
-                   subregion.Perimeter);
+            //printf("Subregion cost %d (%d x %d)\n",
+            //       subregion.Cost,
+            //       subregion.Area,
+            //       subregion.Perimeter);
 
             cost += subregion.Cost;
          }
