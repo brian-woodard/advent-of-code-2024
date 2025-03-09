@@ -59,7 +59,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
       {
          if (y - 1 < 0 || (Region.Map[Idx - w] == '.') || (Region.Map[Idx - w] != '.' && Region.Map[Idx - w - 1] != '.'))
          {
-            printf(">>> (%d, %d) Add side left 1\n", x, y);
+            //printf(">>> (%d, %d) Add side left 1\n", x, y);
             Subregion.Sides++;
          }
          Subregion.Perimeter++;
@@ -69,7 +69,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    {
       if (y - 1 < 0 || (Region.Map[Idx - w] == '.'))
       {
-         printf(">>> (%d, %d) Add side left 2\n", x, y);
+         //printf(">>> (%d, %d) Add side left 2\n", x, y);
          Subregion.Sides++;
       }
       Subregion.Perimeter++;
@@ -86,7 +86,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
       {
          if (y - 1 < 0 || (Region.Map[Idx - w] == '.') || (Region.Map[Idx - w] != '.' && Region.Map[Idx - w + 1] != '.'))
          {
-            printf(">>> (%d, %d) Add side right 1\n", x, y);
+            //printf(">>> (%d, %d) Add side right 1\n", x, y);
             Subregion.Sides++;
          }
          Subregion.Perimeter++;
@@ -96,7 +96,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    {
       if (y - 1 < 0 || (Region.Map[Idx - w] == '.'))
       {
-         printf(">>> (%d, %d) Add side right 2\n", x, y);
+         //printf(">>> (%d, %d) Add side right 2\n", x, y);
          Subregion.Sides++;
       }
       Subregion.Perimeter++;
@@ -111,9 +111,9 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
       }
       else if (Region.Map[Idx - w] == '.')
       {
-         if (x - 1 < 0 || (Region.Map[Idx - 1] == '.') || (Region.Map[Idx - w] == '.' && Region.Map[Idx - w - 1] != '.'))
+         if (x - 1 < 0 || (Region.Map[Idx - 1] == '.') || (Region.Map[Idx - w - 1] != '.'))
          {
-            printf(">>> (%d, %d) Add side up 1\n", x, y);
+            //printf(">>> (%d, %d) Add side up 1\n", x, y);
             Subregion.Sides++;
          }
          Subregion.Perimeter++;
@@ -123,7 +123,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    {
       if (x - 1 < 0 || (Region.Map[Idx - 1] == '.'))
       {
-         printf(">>> (%d, %d) Add side up 2\n", x, y);
+         //printf(">>> (%d, %d) Add side up 2\n", x, y);
          Subregion.Sides++;
       }
       Subregion.Perimeter++;
@@ -138,9 +138,9 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
       }
       else if (Region.Map[Idx + w] == '.')
       {
-         if (x - 1 < 0 || (Region.Map[Idx - 1] == '.'))
+         if (x - 1 < 0 || (Region.Map[Idx - 1] == '.') || (Region.Map[Idx + w - 1] != '.'))
          {
-            printf(">>> (%d, %d) Add side down 1\n", x, y);
+            //printf(">>> (%d, %d) Add side down 1\n", x, y);
             Subregion.Sides++;
          }
          Subregion.Perimeter++;
@@ -150,7 +150,7 @@ void calc_area_and_perimeter_recursive(TRegion& Region, TSubregion& Subregion, i
    {
       if (x - 1 < 0 || (Region.Map[Idx - 1] == '.'))
       {
-         printf(">>> (%d, %d) Add side down 2\n", x, y);
+         //printf(">>> (%d, %d) Add side down 2\n", x, y);
          Subregion.Sides++;
       }
       Subregion.Perimeter++;
@@ -172,7 +172,7 @@ void calc_area_and_perimeter(TRegion& Region)
          {
             calc_area_and_perimeter_recursive(Region, subregion, i, Region.Map[i]);
 
-            print_region(Region);
+            //print_region(Region);
 
             subregion.Cost = subregion.Area * subregion.Sides;
             Region.Subregions.push_back(subregion);
@@ -190,12 +190,12 @@ void calc_area_and_perimeter(TRegion& Region)
 int main()
 {
    //std::fstream file("../test1.txt"); // 80
-   std::fstream file("../test2.txt"); // 436
+   //std::fstream file("../test2.txt"); // 436
    //std::fstream file("../test3.txt"); // 1206
    //std::fstream file("../test4.txt"); // 68
    //std::fstream file("../test5.txt"); // 236
    //std::fstream file("../test6.txt"); // 368
-   //std::fstream file("../input.txt");
+   std::fstream file("../input.txt");
 
    if (file.is_open())
    {
@@ -261,8 +261,8 @@ int main()
 
       for (auto& [key, val] : regions)
       {
-         printf("%c: \n", key);
-         print_region(val);
+         //printf("%c: \n", key);
+         //print_region(val);
 
          // Calculate are and perimeter for each sub-region
          calc_area_and_perimeter(val);
@@ -271,11 +271,11 @@ int main()
 
          for (const auto& subregion : val.Subregions)
          {
-            printf("Subregion cost %d (%d %d %d)\n",
-                   subregion.Cost,
-                   subregion.Area,
-                   subregion.Perimeter,
-                   subregion.Sides);
+            //printf("Subregion cost %d (%d %d %d)\n",
+            //       subregion.Cost,
+            //       subregion.Area,
+            //       subregion.Perimeter,
+            //       subregion.Sides);
 
             cost += subregion.Cost;
          }
