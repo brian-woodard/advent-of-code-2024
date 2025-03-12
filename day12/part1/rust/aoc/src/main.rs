@@ -19,8 +19,13 @@ struct Region {
 }
 
 fn main() {
-    let file = File::open("../../test1.txt").expect("file not found");
+    //let file = File::open("../../test1.txt").expect("file not found"); // 140
+    //let file = File::open("../../test2.txt").expect("file not found"); // 772
+    //let file = File::open("../../test3.txt").expect("file not found"); // 1930
+    //let file = File::open("../../test4.txt").expect("file not found"); // 132
+    let file = File::open("../../input.txt").expect("file not found");
     let reader = BufReader::new(file);
+    let mut cost: u64 = 0;
     let mut regions: HashMap<char, Region> = HashMap::new();
     let mut region = Region {
         map: Vec::new(),
@@ -47,44 +52,51 @@ fn main() {
 
     println!("{} x {}", region.width, region.height);
 
-    print_region(&region);
+    //print_region(&region);
 
     for i in 0..region.map.len() {
-        if let(reg) = regions.get_mut(&region.map[i]) {
-            if reg == None {
-                let mut new_region = Region {
-                    map: Vec::new(),
-                    subregions: Vec::new(),
-                    width: region.width,
-                    height: region.height
-                };
+        let reg = regions.get_mut(&region.map[i]);
 
-                new_region.map.reserve(region.map.len());
-                for _j in 0..region.map.len() {
-                    new_region.map.push('.');
-                }
+        if reg == None {
+            let mut new_region = Region {
+                map: Vec::new(),
+                subregions: Vec::new(),
+                width: region.width,
+                height: region.height
+            };
 
-                new_region.map[i] = region.map[i];
-                regions.insert(region.map[i], new_region);
-            } else {
-                reg.unwrap().map[i] = region.map[i];
+            new_region.map.reserve(region.map.len());
+            for _j in 0..region.map.len() {
+                new_region.map.push('.');
             }
+
+            new_region.map[i] = region.map[i];
+            regions.insert(region.map[i], new_region);
+        } else {
+            reg.unwrap().map[i] = region.map[i];
         }
     }
 
     println!("Regions: {}", regions.len());
 
-    for (key, mut val) in regions {
-        println!("{}: ", key);
-        print_region(&val);
+    for (_key, mut val) in regions {
+        //println!("{}: ", key);
+        //print_region(&val);
 
         // Calculate area and perimeter for each sub-region
         calc_area_and_perimeter(&mut val);
 
-        print_region(&val);
+        //print_region(&val);
+
+        for subregion in val.subregions {
+            cost += subregion.cost as u64;
+        }
     }
+
+    println!("Total cost: {}", cost);
 }
 
+#[allow(dead_code)]
 fn print_region(region: &Region) {
     println!();
     for y in 0..region.height {
@@ -102,7 +114,7 @@ fn print_region(region: &Region) {
 }
 
 fn calc_area_and_perimeter(region: &mut Region) {
-    while true {
+    loop {
         let mut subregion = Subregion {
             area: 0,
             perimeter: 0,
@@ -133,13 +145,14 @@ fn calc_area_and_perimeter_recursive(region: &mut Region, subregion: &mut Subreg
     let w: i32 = region.width;
     let x: i32 = idx as i32 % region.width;
     let y: i32 = idx as i32 / region.height;
+    let value = region.map[idx];
 
     region.map[idx] = 'x';
     subregion.area += 1;
 
     // Check left
     if x - 1 >= 0 {
-        if region.map[idx - 1] == region.map[idx] {
+        if region.map[idx - 1] == value {
             calc_area_and_perimeter_recursive(region, subregion, idx - 1);
         } else if region.map[idx - 1] == '.' {
             subregion.perimeter += 1;
@@ -150,7 +163,7 @@ fn calc_area_and_perimeter_recursive(region: &mut Region, subregion: &mut Subreg
 
     // Check right
     if x + 1 < region.width {
-        if region.map[idx + 1] == region.map[idx] {
+        if region.map[idx + 1] == value {
             calc_area_and_perimeter_recursive(region, subregion, idx + 1);
         } else if region.map[idx + 1] == '.' {
             subregion.perimeter += 1;
@@ -161,7 +174,7 @@ fn calc_area_and_perimeter_recursive(region: &mut Region, subregion: &mut Subreg
 
     // Check up
     if y - 1 >= 0 {
-        if region.map[idx - w as usize] == region.map[idx] {
+        if region.map[idx - w as usize] == value {
             calc_area_and_perimeter_recursive(region, subregion, idx - w as usize);
         } else if region.map[idx - w as usize] == '.' {
             subregion.perimeter += 1;
@@ -172,7 +185,7 @@ fn calc_area_and_perimeter_recursive(region: &mut Region, subregion: &mut Subreg
 
     // Check down
     if y + 1 < region.height {
-        if region.map[idx + w as usize] == region.map[idx] {
+        if region.map[idx + w as usize] == value {
             calc_area_and_perimeter_recursive(region, subregion, idx + w as usize);
         } else if region.map[idx + w as usize] == '.' {
             subregion.perimeter += 1;
