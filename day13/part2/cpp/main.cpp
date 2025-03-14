@@ -55,6 +55,9 @@ void solve_equation(TEquations& Equations)
       int64_t x = numerator / denominator;
       int64_t y = (Equations.Equation[0].Value - (Equations.Equation[0].Coefficient1 * x)) / Equations.Equation[0].Coefficient2;
 
+      if (x < 100)
+         return;
+
       Equations.ButtonA = x;
       Equations.ButtonB = y;
       printf(">>> button a %lld\n", x);
@@ -66,6 +69,7 @@ int main()
 {
    //std::ifstream file("../test.txt"); // 875318608908
    std::ifstream file("../input.txt"); // 96019708038790 - too high
+                                       // 95572536663849 - too high
    std::vector<TEquations> machines;
    int64_t cost = 0;
 
