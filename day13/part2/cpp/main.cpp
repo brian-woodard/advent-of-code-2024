@@ -42,26 +42,29 @@ void print_equations(const TEquations& Equations)
 
 void solve_equation(TEquations& Equations)
 {
-   printf("\n");
-   print_equations(Equations);
+   //printf("\n");
+   //print_equations(Equations);
+
    // Solve for x by plugging in y from equation 2
-   int64_t numerator = (Equations.Equation[0].Value * Equations.Equation[1].Coefficient2) - (Equations.Equation[1].Value * Equations.Equation[0].Coefficient2);
-   int64_t denominator = (Equations.Equation[0].Coefficient1 * Equations.Equation[1].Coefficient2) - (Equations.Equation[1].Coefficient1 * Equations.Equation[0].Coefficient2);
+   int64_t num_x = (Equations.Equation[0].Value * Equations.Equation[1].Coefficient2) - (Equations.Equation[1].Value * Equations.Equation[0].Coefficient2);
+   int64_t dem_x = (Equations.Equation[0].Coefficient1 * Equations.Equation[1].Coefficient2) - (Equations.Equation[1].Coefficient1 * Equations.Equation[0].Coefficient2);
 
-   printf(">>> numerator %lld\n", numerator);
-   printf(">>> denominator %lld\n", denominator);
-   if (numerator % denominator == 0)
+   if (num_x % dem_x == 0)
    {
-      int64_t x = numerator / denominator;
-      int64_t y = (Equations.Equation[0].Value - (Equations.Equation[0].Coefficient1 * x)) / Equations.Equation[0].Coefficient2;
+      int64_t x = num_x / dem_x;
+      int64_t num_y = (Equations.Equation[0].Value - (Equations.Equation[0].Coefficient1 * x));
+      int64_t dem_y = Equations.Equation[0].Coefficient2;
 
-      if (x < 100)
-         return;
+      if (num_y % dem_y == 0)
+      {
+         int64_t y = (Equations.Equation[0].Value - (Equations.Equation[0].Coefficient1 * x)) / Equations.Equation[0].Coefficient2;
 
-      Equations.ButtonA = x;
-      Equations.ButtonB = y;
-      printf(">>> button a %lld\n", x);
-      printf(">>> button b %lld\n", y);
+         if (x < 100 || y < 100)
+            return;
+
+         Equations.ButtonA = x;
+         Equations.ButtonB = y;
+      }
    }
 }
 
@@ -70,6 +73,7 @@ int main()
    //std::ifstream file("../test.txt"); // 875318608908
    std::ifstream file("../input.txt"); // 96019708038790 - too high
                                        // 95572536663849 - too high
+                                       // 95273925552482
    std::vector<TEquations> machines;
    int64_t cost = 0;
 
@@ -131,7 +135,7 @@ int main()
             eq.Equation[0].Value += 10000000000000;
             eq.Equation[1].Value += 10000000000000;
 
-            print_equations(eq);
+            //print_equations(eq);
 
             machines.push_back(eq);
          }
