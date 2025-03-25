@@ -196,8 +196,9 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
 
 int main()
 {
-   std::ifstream file("../test1.txt");
-   //std::ifstream file("../test2.txt");
+   //std::ifstream file("../test1.txt"); // 2028
+   //std::ifstream file("../test2.txt"); // 10092
+   std::ifstream file("../input.txt"); // 1294459
 
    if (file.is_open())
    {
@@ -208,6 +209,7 @@ int main()
       int height = 0;
       int start = 0;
       bool read_map = true;
+      uint64_t gps_sum = 0;
 
       while (!file.eof())
       {
@@ -257,7 +259,23 @@ int main()
       for (size_t i = 0; i < moves.size(); i++)
       {
          move(map, moves[i], start, width, height);
-         print_map(map, width);
+         //print_map(map, width);
       }
+
+      print_map(map, width);
+
+      // calculate gps sum
+      for (size_t i = 0; i < map.size(); i++)
+      {
+         if (map[i] == 'O')
+         {
+            int x = i % width;
+            int y = i / width;
+
+            gps_sum += (100 * y) + x;
+         }
+      }
+
+      printf("GPS sum: %ld\n", gps_sum);
    }
 }
