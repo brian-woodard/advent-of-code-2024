@@ -4,6 +4,13 @@
 #include <vector>
 #include <cassert>
 
+// To get the wider warehouse's map, start with your original map and, for each tile, make the following changes:
+// 
+// If the tile is #, the new map contains ## instead.
+// If the tile is O, the new map contains [] instead.
+// If the tile is ., the new map contains .. instead.
+// If the tile is @, the new map contains @. instead.
+
 void print_map(std::vector<char>& Map, int Width)
 {
    printf("\n");
@@ -14,6 +21,85 @@ void print_map(std::vector<char>& Map, int Width)
       printf("%c", Map[i]);
    }
    printf("\n");
+}
+
+bool check(std::vector<char>& Map, char Move, int Position, int Width, int Height, bool CheckNeighbor)
+{
+   int x = Position % Width;
+   int y = Position / Width;
+
+   int pos_left = Position - 1;
+   int pos_right = Position + 1;
+   bool check_pos = true;
+
+   if (Map[Position] == '.')
+   {
+      return true;
+   }
+   else if (Map[Position] == '[')
+   {
+      if (CheckNeighbor)
+         check_pos = check(Map, Move, pos_right, Width, Height, false);
+   }
+   else if (Map[Position] == ']')
+   {
+      if (CheckNeighbor)
+         check_pos = check(Map, Move, pos_left, Width, Height, false);
+   }
+
+   switch (Move)
+   {
+      case '^':
+      {
+         if (y > 1 && check_pos)
+         {
+            int idx = ((y - 1) * Width) + x;
+            int idx_left = idx - 1;
+            int idx_right = idx + 1;
+
+            if (Map[idx] == '.')
+            {
+               return true;
+            }
+            else if (Map[idx] == '[')
+            {
+               return (check(Map, Move, idx, Width, Height, true));
+            }
+            else if (Map[idx] == ']')
+            {
+               return (check(Map, Move, idx, Width, Height, true));
+            }
+         }
+         break;
+      }
+      case 'v':
+      {
+         if (y < Height - 1 && check_pos)
+         {
+            int idx = ((y + 1) * Width) + x;
+            int idx_left = idx - 1;
+            int idx_right = idx + 1;
+
+            if (Map[idx] == '.')
+            {
+               return true;
+            }
+            else if (Map[idx] == '[')
+            {
+               return (check(Map, Move, idx, Width, Height, true));
+            }
+            else if (Map[idx] == ']')
+            {
+               return (check(Map, Move, idx, Width, Height, true));
+            }
+         }
+         break;
+      }
+      default:
+         break;
+   }
+
+   return false;
 }
 
 bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Height)
@@ -39,7 +125,7 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
                   Position = idx;
                return true;
             }
-            else if (Map[idx] == 'O')
+            else if (Map[idx] == '[' || Map[idx] == ']')
             {
                if (move(Map, Move, idx, Width, Height))
                {
@@ -80,7 +166,7 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
                   Position = idx;
                return true;
             }
-            else if (Map[idx] == 'O')
+            else if (Map[idx] == '[' || Map[idx] == ']')
             {
                if (move(Map, Move, idx, Width, Height))
                {
@@ -110,6 +196,14 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
          if (y > 1)
          {
             int idx = ((y - 1) * Width) + x;
+            int idx_left = idx - 1;
+            int idx_right = idx + 1;
+
+            if (!check(Map, Move, idx, Width, Height, true))
+            {
+               return false;
+            }
+
             if (Map[idx] == '.')
             {
                bool update_position = false;
@@ -121,9 +215,9 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
                   Position = idx;
                return true;
             }
-            else if (Map[idx] == 'O')
+            else if (Map[idx] == '[')
             {
-               if (move(Map, Move, idx, Width, Height))
+               if (move(Map, Move, idx, Width, Height) && move(Map, Move, idx_right, Width, Height))
                {
                   bool update_position = false;
                   if (Map[Position] == '@')
@@ -139,6 +233,28 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
                   return false;
                }
             }
+            else if (Map[idx] == ']')
+            {
+               if (move(Map, Move, idx, Width, Height) && move(Map, Move, idx_left, Width, Height))
+               {
+                  bool update_position = false;
+                  if (Map[Position] == '@')
+                     update_position = true; 
+                  Map[idx] = Map[Position];
+                  Map[Position] = '.';
+                  if (update_position)
+                     Position = idx;
+                  return true;
+               }
+               else
+               {
+                  return false;
+               }
+            }
+            else
+            {
+               return false;
+            }
          }
          else
          {
@@ -151,6 +267,14 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
          if (y < Height - 1)
          {
             int idx = ((y + 1) * Width) + x;
+            int idx_left = idx - 1;
+            int idx_right = idx + 1;
+
+            if (!check(Map, Move, idx, Width, Height, true))
+            {
+               return false;
+            }
+
             if (Map[idx] == '.')
             {
                bool update_position = false;
@@ -162,9 +286,27 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
                   Position = idx;
                return true;
             }
-            else if (Map[idx] == 'O')
+            else if (Map[idx] == '[')
             {
-               if (move(Map, Move, idx, Width, Height))
+               if (move(Map, Move, idx, Width, Height) && move(Map, Move, idx_right, Width, Height))
+               {
+                  bool update_position = false;
+                  if (Map[Position] == '@')
+                     update_position = true; 
+                  Map[idx] = Map[Position];
+                  Map[Position] = '.';
+                  if (update_position)
+                     Position = idx;
+                  return true;
+               }
+               else
+               {
+                  return false;
+               }
+            }
+            else if (Map[idx] == ']')
+            {
+               if (move(Map, Move, idx, Width, Height) && move(Map, Move, idx_left, Width, Height))
                {
                   bool update_position = false;
                   if (Map[Position] == '@')
@@ -196,14 +338,16 @@ bool move(std::vector<char>& Map, char Move, int& Position, int Width, int Heigh
 
 int main()
 {
-   std::ifstream file("../test1.txt"); // 2028
-   //std::ifstream file("../test2.txt"); // 10092
-   //std::ifstream file("../input.txt"); // 1294459
+   //std::ifstream file("../test1.txt"); //
+   //std::ifstream file("../test2.txt"); // 9021
+   //std::ifstream file("../test3.txt"); //
+   std::ifstream file("../input.txt"); //
 
    if (file.is_open())
    {
       std::string line;
       std::vector<char> map;
+      std::vector<char> big_map;
       std::vector<char> moves;
       int width = 0;
       int height = 0;
@@ -256,18 +400,49 @@ int main()
       printf("Number of moves: %ld\n", moves.size());
 
       print_map(map, width);
-      for (size_t i = 0; i < moves.size(); i++)
-      {
-         move(map, moves[i], start, width, height);
-         //print_map(map, width);
-      }
 
-      print_map(map, width);
-
-      // calculate gps sum
+      // resize map
+      width *= 2;
+      printf("%d x %d\n", width, height);
+      big_map.reserve(width * height);
       for (size_t i = 0; i < map.size(); i++)
       {
-         if (map[i] == 'O')
+         if (map[i] == '#')
+         {
+            big_map.push_back('#');
+            big_map.push_back('#');
+         }
+         else if (map[i] == '.')
+         {
+            big_map.push_back('.');
+            big_map.push_back('.');
+         }
+         else if (map[i] == '@')
+         {
+            big_map.push_back('@');
+            start = big_map.size() - 1;
+            big_map.push_back('.');
+         }
+         else if (map[i] == 'O')
+         {
+            big_map.push_back('[');
+            big_map.push_back(']');
+         }
+      }
+
+      print_map(big_map, width);
+      for (size_t i = 0; i < moves.size(); i++)
+      {
+         move(big_map, moves[i], start, width, height);
+         //print_map(big_map, width);
+      }
+
+      print_map(big_map, width);
+
+      // calculate gps sum
+      for (size_t i = 0; i < big_map.size(); i++)
+      {
+         if (big_map[i] == '[')
          {
             int x = i % width;
             int y = i / width;
