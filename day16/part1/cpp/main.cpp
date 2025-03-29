@@ -27,7 +27,7 @@ void print_map(const std::vector<char>& Map, int Width, int Height)
 
 bool walk(std::vector<char>& Map, Vector Position, std::vector<bool>& Seen, std::vector<Vector>& Path, int Width, int Height)
 {
-   printf("walk (%d, %d)\n", Position.X, Position.Y);
+   //printf("walk (%d, %d)\n", Position.X, Position.Y);
    if (Position.X < 0 || Position.X >= Width ||
        Position.Y < 0 || Position.Y >= Height)
    {
@@ -127,10 +127,13 @@ int main()
 
       print_map(map, width, height);
       printf("%d x %d\n", width, height);
-      printf("Start: %d\n", start);
+      printf("Start: %d\n", start_idx);
 
       seen.reserve(map.size());
-      std::fill(seen.begin(), seen.end(), false);
+      for (size_t i = 0; i < map.size(); i++)
+      {
+         seen.push_back(false);
+      }
 
       // solve the maze recursively
       start.X = start_idx % width;
@@ -140,6 +143,11 @@ int main()
 
       // add path to map
       printf("Path size: %ld\n", path.size());
+      for (auto& loc : path)
+      {
+         int idx = (loc.Y * width) + loc.X;
+         map[idx] = 'x';
+      }
 
       print_map(map, width, height);
    }
